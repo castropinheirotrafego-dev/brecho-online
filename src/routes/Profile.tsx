@@ -47,6 +47,7 @@ export default function Profile() {
   const [orders, setOrders] = useState<OrderRow[]>([])
   const [offers, setOffers] = useState<OfferRow[]>([])
   const [respondingId, setRespondingId] = useState<string | null>(null)
+  const [offerError, setOfferError] = useState<string | null>(null)
 
   useEffect(() => {
     if (profile) setPhone(profile.phone)
@@ -111,7 +112,9 @@ export default function Profile() {
 
   async function respondOffer(offerId: string, action: 'accept' | 'cancel') {
     setRespondingId(offerId)
-    await supabase.rpc('buyer_respond_offer', { p_offer_id: offerId, p_action: action })
+    setOfferError(null)
+    const { error } = await supabase.rpc('buyer_respond_offer', { p_offer_id: offerId, p_action: action })
+    if (error) setOfferError(error.message)
     await loadData()
     setRespondingId(null)
   }
@@ -185,6 +188,7 @@ export default function Profile() {
       <h2 id="negociacoes" className="mb-3 scroll-mt-24 text-xl font-semibold text-forest-900">
         Minhas negociações
       </h2>
+      {offerError && <p className="mb-4 text-sm text-red-600">{offerError}</p>}
       {offers.length === 0 ? (
         <p className="mb-8 text-forest-400">Você ainda não fez nenhuma oferta.</p>
       ) : (

@@ -1,16 +1,19 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { Paperclip, Pencil, X } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import Breadcrumbs from '../../components/Breadcrumbs'
 import BackButton from '../../components/BackButton'
-import type { ItemStatus, ItemType } from '../../lib/database.types'
+import type { ItemCategory, ItemStatus, ItemType } from '../../lib/database.types'
 
 interface ItemRow {
   id: string
   name: string
   type: ItemType
+  category: ItemCategory
   size: string | null
   price: number
+  description: string | null
   status: ItemStatus
   cover_path: string | null
 }
@@ -22,16 +25,56 @@ const statusLabels: Record<ItemStatus, string> = {
   sold: 'Vendida',
 }
 
+const statusColors: Record<ItemStatus, string> = {
+  available: 'bg-green-100 text-green-700',
+  negotiating: 'bg-amber-100 text-amber-700',
+  reserved: 'bg-blue-100 text-blue-700',
+  sold: 'bg-gray-200 text-gray-600',
+}
+
+const sizeOptions = [
+  'PP',
+  'P',
+  'M',
+  'G',
+  'GG',
+  '34',
+  '35',
+  '36',
+  '37',
+  '38',
+  '39',
+  '40',
+  '41',
+  '42',
+  '43',
+  '44',
+  'Única',
+]
+
+const emptyForm = {
+  name: '',
+  type: 'roupa' as ItemType,
+  category: 'adulto' as ItemCategory,
+  size: '',
+  price: '',
+  description: '',
+}
+
 export default function AdminItems() {
   const { user } = useAuth()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const formRef = useRef<HTMLFormElement>(null)
   const [items, setItems] = useState<ItemRow[]>([])
   const [loading, setLoading] = useState(true)
 
-  const [name, setName] = useState('')
-  const [type, setType] = useState<ItemType>('roupa')
-  const [size, setSize] = useState('')
-  const [price, setPrice] = useState('')
-  const [description, setDescription] = useState('')
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [name, setName] = useState(emptyForm.name)
+  const [type, setType] = useState<ItemType>(emptyForm.type)
+  const [category, setCategory] = useState<ItemCategory>(emptyForm.category)
+  const [size, setSize] = useState(emptyForm.size)
+  const [price, setPrice] = useState(emptyForm.price)
+  const [description, setDescription] = useState(emptyForm.description)
   const [photos, setPhotos] = useState<File[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -40,7 +83,7 @@ export default function AdminItems() {
     setLoading(true)
     const { data } = await supabase
       .from('items')
-      .select('id, name, type, size, price, status, item_images(storage_path, position)')
+      .select('id, name, type, category, size, price, description, status, item_images(storage_path, position)')
       .order('created_at', { ascending: false })
 
     setItems(
@@ -51,8 +94,10 @@ export default function AdminItems() {
           id: row.id,
           name: row.name,
           type: row.type,
+          category: row.category,
           size: row.size,
           price: row.price,
+          description: row.description,
           status: row.status,
           cover_path: sorted[0]?.storage_path ?? null,
         }
@@ -69,6 +114,31 @@ export default function AdminItems() {
     setPhotos(Array.from(e.target.files ?? []).slice(0, 6))
   }
 
+  function resetForm() {
+    setEditingId(null)
+    setName(emptyForm.name)
+    setType(emptyForm.type)
+    setCategory(emptyForm.category)
+    setSize(emptyForm.size)
+    setPrice(emptyForm.price)
+    setDescription(emptyForm.description)
+    setPhotos([])
+    setError(null)
+  }
+
+  function startEdit(item: ItemRow) {
+    setEditingId(item.id)
+    setName(item.name)
+    setType(item.type)
+    setCategory(item.category)
+    setSize(item.size ?? '')
+    setPrice(String(item.price))
+    setDescription(item.description ?? '')
+    setPhotos([])
+    setError(null)
+    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!user) return
@@ -78,35 +148,44 @@ export default function AdminItems() {
       const priceNumber = Number(price.replace(',', '.'))
       if (Number.isNaN(priceNumber) || priceNumber < 0) throw new Error('Informe um preço válido')
 
-      const { data: item, error: itemError } = await supabase
-        .from('items')
-        .insert({ name, type, size, price: priceNumber, description })
-        .select('id')
-        .single()
-      if (itemError || !item) throw itemError ?? new Error('Erro ao criar peça')
+      let itemId = editingId
 
-      for (let i = 0; i < photos.length; i++) {
-        const file = photos[i]
-        const path = `${item.id}/${i}-${file.name}`
-        const { error: uploadError } = await supabase.storage
-          .from('item-photos')
-          .upload(path, file, { upsert: true })
-        if (uploadError) throw uploadError
-
-        const { error: imageError } = await supabase
-          .from('item_images')
-          .insert({ item_id: item.id, storage_path: path, position: i })
-        if (imageError) throw imageError
+      if (editingId) {
+        const { error: updateError } = await supabase
+          .from('items')
+          .update({ name, type, category, size, price: priceNumber, description })
+          .eq('id', editingId)
+        if (updateError) throw updateError
+      } else {
+        const { data: item, error: itemError } = await supabase
+          .from('items')
+          .insert({ name, type, category, size, price: priceNumber, description })
+          .select('id')
+          .single()
+        if (itemError || !item) throw itemError ?? new Error('Erro ao criar peça')
+        itemId = item.id
       }
 
-      setName('')
-      setSize('')
-      setPrice('')
-      setDescription('')
-      setPhotos([])
+      if (itemId) {
+        for (let i = 0; i < photos.length; i++) {
+          const file = photos[i]
+          const path = `${itemId}/${Date.now()}-${i}-${file.name}`
+          const { error: uploadError } = await supabase.storage
+            .from('item-photos')
+            .upload(path, file, { upsert: true })
+          if (uploadError) throw uploadError
+
+          const { error: imageError } = await supabase
+            .from('item_images')
+            .insert({ item_id: itemId, storage_path: path, position: i })
+          if (imageError) throw imageError
+        }
+      }
+
+      resetForm()
       await loadItems()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao publicar peça')
+      setError(err instanceof Error ? err.message : 'Erro ao salvar peça')
     } finally {
       setSubmitting(false)
     }
@@ -121,9 +200,15 @@ export default function AdminItems() {
     <div>
       <BackButton />
       <Breadcrumbs items={[{ label: 'Início', to: '/' }, { label: 'Admin' }, { label: 'Publicar peça' }]} />
-      <h1 className="mb-6 text-2xl font-bold text-forest-900">Publicar uma peça</h1>
+      <h1 className="mb-6 text-2xl font-bold text-forest-900">
+        {editingId ? 'Editar peça' : 'Publicar uma peça'}
+      </h1>
 
-      <form onSubmit={handleSubmit} className="mb-10 flex max-w-xl flex-col gap-4 rounded-xl border border-cream-300 bg-white p-5">
+      <form
+        ref={formRef}
+        onSubmit={handleSubmit}
+        className="mb-10 flex max-w-xl flex-col gap-4 rounded-xl border border-cream-300 bg-white p-5"
+      >
         <input
           required
           placeholder="Nome (ex: Jaqueta Jeans)"
@@ -142,13 +227,28 @@ export default function AdminItems() {
             <option value="sapato">Sapato</option>
             <option value="bolsa">Bolsa</option>
           </select>
-          <input
-            placeholder="Tamanho"
-            value={size}
-            onChange={(e) => setSize(e.target.value)}
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value as ItemCategory)}
             className="rounded-lg border border-cream-300 px-4 py-2 outline-none focus:border-forest-500"
-          />
+          >
+            <option value="adulto">Adulto</option>
+            <option value="infantil">Infantil</option>
+          </select>
         </div>
+
+        <select
+          value={size}
+          onChange={(e) => setSize(e.target.value)}
+          className="rounded-lg border border-cream-300 px-4 py-2 outline-none focus:border-forest-500"
+        >
+          <option value="">Selecione o tamanho</option>
+          {sizeOptions.map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
 
         <input
           required
@@ -167,19 +267,50 @@ export default function AdminItems() {
         />
 
         <div>
-          <label className="mb-1 block text-sm text-forest-500">Fotos (até 6)</label>
-          <input type="file" accept="image/*" multiple onChange={handlePhotosChange} />
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handlePhotosChange}
+            className="hidden"
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="flex items-center gap-2 rounded-lg border border-dashed border-cream-300 px-4 py-2 text-sm font-medium text-forest-700 hover:bg-cream-100"
+          >
+            <Paperclip size={16} />
+            Anexar fotos
+          </button>
+          {photos.length > 0 && (
+            <p className="mt-1 text-xs text-forest-400">{photos.length} foto(s) selecionada(s)</p>
+          )}
+          {editingId && (
+            <p className="mt-1 text-xs text-forest-400">Fotos novas serão adicionadas às já existentes.</p>
+          )}
         </div>
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 
-        <button
-          type="submit"
-          disabled={submitting}
-          className="rounded-full bg-forest-600 px-4 py-2 font-medium text-cream-50 hover:bg-forest-700 disabled:opacity-50"
-        >
-          {submitting ? 'Publicando...' : 'Publicar'}
-        </button>
+        <div className="flex gap-2">
+          <button
+            type="submit"
+            disabled={submitting}
+            className="flex-1 rounded-full bg-forest-600 px-4 py-2 font-medium text-cream-50 hover:bg-forest-700 disabled:opacity-50"
+          >
+            {submitting ? 'Salvando...' : editingId ? 'Salvar alterações' : 'Publicar'}
+          </button>
+          {editingId && (
+            <button
+              type="button"
+              onClick={resetForm}
+              className="rounded-full border border-cream-300 px-4 py-2 text-forest-600"
+            >
+              Cancelar
+            </button>
+          )}
+        </div>
       </form>
 
       <h2 className="mb-4 text-xl font-semibold text-forest-900">Minhas peças</h2>
@@ -206,9 +337,16 @@ export default function AdminItems() {
                     {item.size ? ` · Tam. ${item.size}` : ''}
                   </p>
                 </div>
-                <span className="rounded-full bg-cream-200 px-3 py-1 text-xs text-forest-600">
+                <span className={`rounded-full px-3 py-1 text-xs font-medium ${statusColors[item.status]}`}>
                   {statusLabels[item.status]}
                 </span>
+                <button
+                  onClick={() => startEdit(item)}
+                  className="flex items-center gap-1 rounded-full border border-cream-300 px-3 py-1 text-xs font-medium text-forest-700 hover:bg-cream-100"
+                >
+                  <Pencil size={14} />
+                  Editar
+                </button>
                 {item.status !== 'available' && (
                   <button
                     onClick={() => markAvailable(item.id)}
@@ -221,6 +359,16 @@ export default function AdminItems() {
             )
           })}
         </div>
+      )}
+
+      {editingId && (
+        <button
+          onClick={resetForm}
+          className="fixed bottom-5 left-5 z-40 flex items-center gap-1 rounded-full bg-forest-900 px-4 py-2 text-sm text-cream-50 shadow-lg sm:hidden"
+        >
+          <X size={14} />
+          Cancelar edição
+        </button>
       )}
     </div>
   )

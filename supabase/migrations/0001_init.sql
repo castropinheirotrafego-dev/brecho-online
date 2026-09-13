@@ -56,12 +56,14 @@ $$;
 
 -- Peças do closet (roupas, sapatos, bolsas)
 create type public.item_type as enum ('roupa', 'sapato', 'bolsa');
+create type public.item_category as enum ('adulto', 'infantil');
 create type public.item_status as enum ('available', 'negotiating', 'reserved', 'sold');
 
 create table public.items (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   type public.item_type not null,
+  category public.item_category not null default 'adulto',
   size text,
   price numeric(10, 2) not null check (price >= 0),
   description text,
@@ -72,6 +74,7 @@ create table public.items (
 
 create index items_status_idx on public.items (status);
 create index items_type_idx on public.items (type);
+create index items_category_idx on public.items (category);
 
 alter table public.items enable row level security;
 
@@ -241,6 +244,28 @@ create policy "Admin apaga fotos"
 -- duas pessoas comprem/negociem a mesma peça ao mesmo tempo.
 -- ==========================================================================
 
+-- Cancela automaticamente outras ofertas pendentes de uma peça quando ela é reservada por outro meio
+create function public.cancel_other_pending_offers(p_item_id uuid, p_exclude_offer_id uuid default null)
+returns void
+language plpgsql
+security definer set search_path = public
+as $$
+declare
+  rec record;
+begin
+  for rec in
+    select id from public.offers
+    where item_id = p_item_id
+      and status = 'pending'
+      and (p_exclude_offer_id is null or id <> p_exclude_offer_id)
+  loop
+    update public.offers set status = 'cancelled', updated_at = now() where id = rec.id;
+    insert into public.offer_rounds (offer_id, author, amount, message)
+    values (rec.id, 'admin', (select last_amount from public.offers where id = rec.id), 'Peça vendida por outro meio');
+  end loop;
+end;
+$$;
+
 -- Finaliza a compra direta de todas as peças disponíveis no carrinho do usuário
 create function public.checkout_cart()
 returns setof public.orders
@@ -269,6 +294,7 @@ begin
     returning * into new_order;
 
     delete from public.cart_items where user_id = auth.uid() and item_id = rec.item_id;
+    perform public.cancel_other_pending_offers(rec.item_id);
 
     return next new_order;
   end loop;
@@ -299,6 +325,7 @@ begin
   returning * into new_order;
 
   delete from public.cart_items where item_id = p_item_id and user_id = auth.uid();
+  perform public.cancel_other_pending_offers(p_item_id);
 
   return new_order;
 end;
@@ -356,7 +383,7 @@ begin
 
   if p_action = 'accept' then
     if (select status from public.items where id = o.item_id) not in ('available', 'negotiating') then
-      raise exception 'Peça indisponível';
+      raise exception 'Esta peça já foi vendida ou reservada por outra via. Recuse esta oferta para encerrá-la.';
     end if;
 
     update public.items set status = 'reserved', updated_at = now() where id = o.item_id;
@@ -368,12 +395,16 @@ begin
     insert into public.offer_rounds (offer_id, author, amount, message)
     values (p_offer_id, 'admin', o.last_amount, coalesce(p_message, 'Oferta aceita'));
 
+    perform public.cancel_other_pending_offers(o.item_id, p_offer_id);
+
   elsif p_action = 'reject' then
     update public.offers set status = 'rejected', updated_at = now() where id = p_offer_id
     returning * into updated;
     insert into public.offer_rounds (offer_id, author, amount, message)
     values (p_offer_id, 'admin', o.last_amount, coalesce(p_message, 'Oferta recusada'));
-    update public.items set status = 'available', updated_at = now() where id = o.item_id;
+    if (select status from public.items where id = o.item_id) = 'negotiating' then
+      update public.items set status = 'available', updated_at = now() where id = o.item_id;
+    end if;
 
   elsif p_action = 'counter' then
     if p_amount is null then
@@ -414,10 +445,10 @@ begin
 
   if p_action = 'accept' then
     if o.last_author <> 'admin' then
-      raise exception 'Aguarde a resposta do administrador';
+      raise exception 'Aguarde a resposta da administradora';
     end if;
     if (select status from public.items where id = o.item_id) not in ('available', 'negotiating') then
-      raise exception 'Peça indisponível';
+      raise exception 'Esta peça já foi vendida ou reservada por outra via. Desista da negociação para encerrá-la.';
     end if;
 
     update public.items set status = 'reserved', updated_at = now() where id = o.item_id;
@@ -429,12 +460,16 @@ begin
     insert into public.offer_rounds (offer_id, author, amount, message)
     values (p_offer_id, 'buyer', o.last_amount, 'Contraproposta aceita');
 
+    perform public.cancel_other_pending_offers(o.item_id, p_offer_id);
+
   elsif p_action = 'cancel' then
     update public.offers set status = 'cancelled', updated_at = now() where id = p_offer_id
     returning * into updated;
     insert into public.offer_rounds (offer_id, author, amount, message)
     values (p_offer_id, 'buyer', o.last_amount, 'Comprador desistiu');
-    update public.items set status = 'available', updated_at = now() where id = o.item_id;
+    if (select status from public.items where id = o.item_id) = 'negotiating' then
+      update public.items set status = 'available', updated_at = now() where id = o.item_id;
+    end if;
 
   else
     raise exception 'Ação inválida';

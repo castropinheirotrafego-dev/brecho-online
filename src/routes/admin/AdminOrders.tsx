@@ -24,6 +24,7 @@ export default function AdminOrders() {
   const [orders, setOrders] = useState<OrderRow[]>([])
   const [loading, setLoading] = useState(true)
   const [busyId, setBusyId] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   async function loadOrders() {
     setLoading(true)
@@ -54,7 +55,9 @@ export default function AdminOrders() {
 
   async function finish(orderId: string, action: 'reactivate' | 'complete') {
     setBusyId(orderId)
-    await supabase.rpc('admin_finish_order', { p_order_id: orderId, p_action: action })
+    setError(null)
+    const { error } = await supabase.rpc('admin_finish_order', { p_order_id: orderId, p_action: action })
+    if (error) setError(error.message)
     await loadOrders()
     setBusyId(null)
   }
@@ -67,6 +70,7 @@ export default function AdminOrders() {
       <BackButton />
       <Breadcrumbs items={[{ label: 'Início', to: '/' }, { label: 'Admin' }, { label: 'Pedidos' }]} />
       <h1 className="mb-6 text-2xl font-bold text-forest-900">Pedidos</h1>
+      {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
 
       {loading ? (
         <p className="text-forest-400">Carregando...</p>

@@ -15,6 +15,7 @@ interface AuthContextValue {
   profile: Profile | null
   session: Session | null
   loading: boolean
+  profileLoading: boolean
   signUp: (fullName: string, email: string, phone: string, password: string) => Promise<void>
   signIn: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
@@ -28,6 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [profileLoading, setProfileLoading] = useState(true)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -46,15 +48,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const userId = session?.user?.id
     if (!userId) {
       setProfile(null)
+      setProfileLoading(loading)
       return
     }
+    setProfileLoading(true)
     supabase
       .from('profiles')
       .select('id, full_name, email, phone, is_admin')
       .eq('id', userId)
       .single()
-      .then(({ data }) => setProfile(data))
-  }, [session?.user?.id])
+      .then(({ data }) => {
+        setProfile(data)
+        setProfileLoading(false)
+      })
+  }, [session?.user?.id, loading])
 
   async function signUp(fullName: string, email: string, phone: string, password: string) {
     const { error } = await supabase.auth.signUp({
@@ -77,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user: session?.user ?? null, profile, session, loading, signUp, signIn, signOut }}
+      value={{ user: session?.user ?? null, profile, session, loading, profileLoading, signUp, signIn, signOut }}
     >
       {children}
     </AuthContext.Provider>

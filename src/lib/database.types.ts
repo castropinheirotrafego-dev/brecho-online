@@ -1,4 +1,5 @@
 export type ItemType = 'roupa' | 'sapato' | 'bolsa'
+export type ItemCategory = 'adulto' | 'infantil'
 export type ItemStatus = 'available' | 'negotiating' | 'reserved' | 'sold'
 export type OrderStatus = 'pending_delivery' | 'completed' | 'cancelled'
 export type OfferStatus = 'pending' | 'accepted' | 'rejected' | 'cancelled'
@@ -33,6 +34,7 @@ export interface Database {
           id: string
           name: string
           type: ItemType
+          category: ItemCategory
           size: string | null
           price: number
           description: string | null
@@ -43,6 +45,7 @@ export interface Database {
         Insert: {
           name: string
           type: ItemType
+          category?: ItemCategory
           size?: string | null
           price: number
           description?: string | null
@@ -51,6 +54,7 @@ export interface Database {
         Update: {
           name?: string
           type?: ItemType
+          category?: ItemCategory
           size?: string | null
           price?: number
           description?: string | null

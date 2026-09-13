@@ -3,13 +3,19 @@ import { useSearchParams } from 'react-router-dom'
 import { Search } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import ItemCard, { type ItemCardData } from '../components/ItemCard'
-import type { ItemType } from '../lib/database.types'
+import type { ItemCategory, ItemType } from '../lib/database.types'
 
 const typeOptions: { value: ItemType | ''; label: string }[] = [
   { value: '', label: 'Todos os tipos' },
   { value: 'roupa', label: 'Roupas' },
   { value: 'sapato', label: 'Sapatos' },
   { value: 'bolsa', label: 'Bolsas' },
+]
+
+const categoryOptions: { value: ItemCategory | ''; label: string }[] = [
+  { value: '', label: 'Todas as categorias' },
+  { value: 'adulto', label: 'Adulto' },
+  { value: 'infantil', label: 'Infantil' },
 ]
 
 const sizeOptions = [
@@ -48,6 +54,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [type, setType] = useState<ItemType | ''>((searchParams.get('tipo') as ItemType | null) ?? '')
+  const [category, setCategory] = useState<ItemCategory | ''>('')
   const [size, setSize] = useState('')
   const [maxPrice, setMaxPrice] = useState('')
   const [sort, setSort] = useState('recent')
@@ -58,12 +65,13 @@ export default function Home() {
       const sortConfig = sortOptions.find((s) => s.value === sort) ?? sortOptions[0]
       let query = supabase
         .from('items')
-        .select('id, name, price, size, type, item_images(storage_path, position)')
+        .select('id, name, price, size, type, category, item_images(storage_path, position)')
         .eq('status', 'available')
         .order(sortConfig.column, { ascending: sortConfig.ascending })
 
       if (search.trim()) query = query.ilike('name', `%${search.trim()}%`)
       if (type) query = query.eq('type', type)
+      if (category) query = query.eq('category', category)
       if (size) query = query.eq('size', size)
       if (maxPrice.trim()) {
         const value = Number(maxPrice.replace(',', '.'))
@@ -91,7 +99,7 @@ export default function Home() {
     }, 300)
 
     return () => clearTimeout(timeout)
-  }, [search, type, size, maxPrice, sort])
+  }, [search, type, category, size, maxPrice, sort])
 
   return (
     <div>
@@ -99,7 +107,7 @@ export default function Home() {
         <h1 className="text-3xl font-bold leading-tight text-forest-900 md:text-4xl">
           Roupas que ganham novas histórias
         </h1>
-        <p className="mt-3 text-forest-500">Peças selecionadas, com preços justos, esperando por você.</p>
+        <p className="mt-3 text-forest-500">Novas histórias para vestir, do adulto ao infantil.</p>
       </section>
 
       <div id="catalogo" className="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
@@ -118,6 +126,17 @@ export default function Home() {
           className="rounded-full border border-cream-300 bg-white px-4 py-2 outline-none focus:border-forest-500"
         >
           {typeOptions.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value as ItemCategory | '')}
+          className="rounded-full border border-cream-300 bg-white px-4 py-2 outline-none focus:border-forest-500"
+        >
+          {categoryOptions.map((opt) => (
             <option key={opt.value} value={opt.value}>
               {opt.label}
             </option>
