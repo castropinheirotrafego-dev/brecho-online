@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { LayoutDashboard, LogOut, Tag } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import Breadcrumbs from '../components/Breadcrumbs'
@@ -37,8 +38,9 @@ const offerStatusLabels: Record<OfferStatus, string> = {
 }
 
 export default function Profile() {
-  const { user, profile } = useAuth()
+  const { user, profile, signOut } = useAuth()
   const location = useLocation()
+  const navigate = useNavigate()
   const [phone, setPhone] = useState('')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -114,6 +116,11 @@ export default function Profile() {
     setRespondingId(null)
   }
 
+  async function handleSignOut() {
+    await signOut()
+    navigate('/')
+  }
+
   return (
     <div>
       <BackButton />
@@ -150,6 +157,30 @@ export default function Profile() {
         </button>
         {saved && <p className="text-sm text-green-700">Perfil atualizado!</p>}
       </form>
+
+      {profile?.is_admin && (
+        <div className="mb-10 flex flex-col gap-2 sm:hidden">
+          <h2 className="mb-1 text-xl font-semibold text-forest-900">Painel administrativo</h2>
+          <Link
+            to="/admin/pecas"
+            className="flex items-center gap-2 rounded-lg border border-cream-300 bg-white px-4 py-2.5 text-forest-700"
+          >
+            <LayoutDashboard size={18} /> Publicar / gerenciar peças
+          </Link>
+          <Link
+            to="/admin/ofertas"
+            className="flex items-center gap-2 rounded-lg border border-cream-300 bg-white px-4 py-2.5 text-forest-700"
+          >
+            <Tag size={18} /> Ofertas recebidas
+          </Link>
+          <Link
+            to="/admin/pedidos"
+            className="flex items-center gap-2 rounded-lg border border-cream-300 bg-white px-4 py-2.5 text-forest-700"
+          >
+            Pedidos
+          </Link>
+        </div>
+      )}
 
       <h2 id="negociacoes" className="mb-3 scroll-mt-24 text-xl font-semibold text-forest-900">
         Minhas negociações
@@ -223,6 +254,14 @@ export default function Profile() {
           ))}
         </div>
       )}
+
+      <button
+        onClick={handleSignOut}
+        className="mt-10 flex items-center gap-2 text-sm font-medium text-forest-500 hover:text-red-600"
+      >
+        <LogOut size={16} />
+        Sair da conta
+      </button>
     </div>
   )
 }

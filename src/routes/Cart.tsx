@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { useCart } from '../contexts/CartContext'
 import Breadcrumbs from '../components/Breadcrumbs'
 import BackButton from '../components/BackButton'
 import PurchaseConfirmation from '../components/PurchaseConfirmation'
@@ -16,6 +17,7 @@ interface CartRow {
 
 export default function Cart() {
   const { user } = useAuth()
+  const { refresh: refreshCart } = useCart()
   const [rows, setRows] = useState<CartRow[]>([])
   const [loading, setLoading] = useState(true)
   const [checkingOut, setCheckingOut] = useState(false)
@@ -54,6 +56,7 @@ export default function Cart() {
     if (!user) return
     await supabase.from('cart_items').delete().eq('user_id', user.id).eq('item_id', itemId)
     setRows((prev) => prev.filter((r) => r.item_id !== itemId))
+    refreshCart()
   }
 
   async function handleCheckout() {
@@ -64,6 +67,7 @@ export default function Cart() {
       if (error) throw error
       setDone(true)
       setRows([])
+      refreshCart()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao finalizar compra')
     } finally {
@@ -90,15 +94,7 @@ export default function Cart() {
       {loading ? (
         <p className="text-forest-400">Carregando...</p>
       ) : rows.length === 0 ? (
-        <div className="text-center">
-          <p className="mb-4 text-forest-400">Seu carrinho está vazio.</p>
-          <Link
-            to="/"
-            className="inline-block rounded-full bg-forest-600 px-5 py-2.5 font-medium text-cream-50 hover:bg-forest-700"
-          >
-            Continuar comprando
-          </Link>
-        </div>
+        <p className="text-center text-forest-400">Seu carrinho está vazio.</p>
       ) : (
         <div className="flex flex-col gap-3">
           {rows.map((row) => {

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { useCart } from '../contexts/CartContext'
 import Breadcrumbs from '../components/Breadcrumbs'
 import BackButton from '../components/BackButton'
 import PurchaseConfirmation from '../components/PurchaseConfirmation'
@@ -26,6 +27,7 @@ const typeLabels: Record<string, string> = {
 export default function ItemDetail() {
   const { id } = useParams<{ id: string }>()
   const { user } = useAuth()
+  const { refresh: refreshCart } = useCart()
   const navigate = useNavigate()
   const [item, setItem] = useState<ItemDetailData | null>(null)
   const [activeImage, setActiveImage] = useState(0)
@@ -78,6 +80,7 @@ export default function ItemDetail() {
     await supabase.from('cart_items').insert({ user_id: user.id, item_id: item.id })
     setInCart(true)
     setAddingToCart(false)
+    refreshCart()
   }
 
   async function handleBuyNow() {
@@ -88,6 +91,7 @@ export default function ItemDetail() {
       const { error } = await supabase.rpc('buy_now', { p_item_id: item.id })
       if (error) throw error
       setBought(true)
+      refreshCart()
     } catch (err) {
       setBuyError(err instanceof Error ? err.message : 'Erro ao concluir a compra')
     } finally {
