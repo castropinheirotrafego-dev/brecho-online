@@ -56,7 +56,7 @@ $$;
 
 -- Peças do closet (roupas, sapatos, bolsas)
 create type public.item_type as enum ('roupa', 'sapato', 'bolsa');
-create type public.item_status as enum ('available', 'reserved', 'sold');
+create type public.item_status as enum ('available', 'negotiating', 'reserved', 'sold');
 
 create table public.items (
   id uuid primary key default gen_random_uuid(),
@@ -75,9 +75,14 @@ create index items_type_idx on public.items (type);
 
 alter table public.items enable row level security;
 
-create policy "Peças disponíveis são públicas, admin vê tudo"
+create policy "Peças disponíveis são públicas, admin vê tudo, envolvidos veem a sua"
   on public.items for select
-  using (status = 'available' or public.is_admin());
+  using (
+    status = 'available'
+    or public.is_admin()
+    or exists (select 1 from public.offers o where o.item_id = items.id and o.buyer_id = auth.uid())
+    or exists (select 1 from public.orders ord where ord.item_id = items.id and ord.buyer_id = auth.uid())
+  );
 
 create policy "Admin gerencia as peças"
   on public.items for all
@@ -99,7 +104,13 @@ create policy "Fotos visíveis junto com a peça"
   using (
     exists (
       select 1 from public.items i
-      where i.id = item_id and (i.status = 'available' or public.is_admin())
+      where i.id = item_id
+        and (
+          i.status = 'available'
+          or public.is_admin()
+          or exists (select 1 from public.offers o where o.item_id = i.id and o.buyer_id = auth.uid())
+          or exists (select 1 from public.orders ord where ord.item_id = i.id and ord.buyer_id = auth.uid())
+        )
     )
   );
 
@@ -265,6 +276,34 @@ begin
 end;
 $$;
 
+-- Compra direta e imediata de uma única peça (botão "Comprar" na tela do item)
+create function public.buy_now(p_item_id uuid)
+returns public.orders
+language plpgsql
+security definer set search_path = public
+as $$
+declare
+  new_order public.orders;
+  item_price numeric(10, 2);
+begin
+  select price into item_price from public.items where id = p_item_id for update;
+
+  if (select status from public.items where id = p_item_id) <> 'available' then
+    raise exception 'Peça indisponível';
+  end if;
+
+  update public.items set status = 'reserved', updated_at = now() where id = p_item_id;
+
+  insert into public.orders (item_id, buyer_id, price, status)
+  values (p_item_id, auth.uid(), item_price, 'pending_delivery')
+  returning * into new_order;
+
+  delete from public.cart_items where item_id = p_item_id and user_id = auth.uid();
+
+  return new_order;
+end;
+$$;
+
 -- Comprador cria uma proposta (oferta) para uma peça disponível
 create function public.create_offer(p_item_id uuid, p_amount numeric, p_message text default null)
 returns public.offers
@@ -284,6 +323,8 @@ begin
 
   insert into public.offer_rounds (offer_id, author, amount, message)
   values (new_offer.id, 'buyer', p_amount, p_message);
+
+  update public.items set status = 'negotiating', updated_at = now() where id = p_item_id;
 
   return new_offer;
 end;
@@ -314,7 +355,7 @@ begin
   end if;
 
   if p_action = 'accept' then
-    if (select status from public.items where id = o.item_id) <> 'available' then
+    if (select status from public.items where id = o.item_id) not in ('available', 'negotiating') then
       raise exception 'Peça indisponível';
     end if;
 
@@ -332,6 +373,7 @@ begin
     returning * into updated;
     insert into public.offer_rounds (offer_id, author, amount, message)
     values (p_offer_id, 'admin', o.last_amount, coalesce(p_message, 'Oferta recusada'));
+    update public.items set status = 'available', updated_at = now() where id = o.item_id;
 
   elsif p_action = 'counter' then
     if p_amount is null then
@@ -374,7 +416,7 @@ begin
     if o.last_author <> 'admin' then
       raise exception 'Aguarde a resposta do administrador';
     end if;
-    if (select status from public.items where id = o.item_id) <> 'available' then
+    if (select status from public.items where id = o.item_id) not in ('available', 'negotiating') then
       raise exception 'Peça indisponível';
     end if;
 
@@ -392,6 +434,7 @@ begin
     returning * into updated;
     insert into public.offer_rounds (offer_id, author, amount, message)
     values (p_offer_id, 'buyer', o.last_amount, 'Comprador desistiu');
+    update public.items set status = 'available', updated_at = now() where id = o.item_id;
 
   else
     raise exception 'Ação inválida';

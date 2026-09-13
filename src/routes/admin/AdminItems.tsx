@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
+import Breadcrumbs from '../../components/Breadcrumbs'
+import BackButton from '../../components/BackButton'
 import type { ItemStatus, ItemType } from '../../lib/database.types'
 
 interface ItemRow {
@@ -15,6 +17,7 @@ interface ItemRow {
 
 const statusLabels: Record<ItemStatus, string> = {
   available: 'Disponível',
+  negotiating: 'Em negociação',
   reserved: 'Reservada',
   sold: 'Vendida',
 }
@@ -116,6 +119,8 @@ export default function AdminItems() {
 
   return (
     <div>
+      <BackButton />
+      <Breadcrumbs items={[{ label: 'Início', to: '/' }, { label: 'Admin' }, { label: 'Publicar peça' }]} />
       <h1 className="mb-6 text-2xl font-bold text-forest-900">Publicar uma peça</h1>
 
       <form onSubmit={handleSubmit} className="mb-10 flex max-w-xl flex-col gap-4 rounded-xl border border-cream-300 bg-white p-5">

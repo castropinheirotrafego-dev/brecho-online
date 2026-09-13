@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import Breadcrumbs from '../components/Breadcrumbs'
+import BackButton from '../components/BackButton'
+import PurchaseConfirmation from '../components/PurchaseConfirmation'
 
 interface CartRow {
   item_id: string
@@ -70,23 +74,31 @@ export default function Cart() {
   const total = rows.reduce((sum, r) => sum + r.price, 0)
 
   if (done) {
-    return (
-      <div className="mx-auto max-w-md text-center">
-        <h1 className="mb-3 text-2xl font-bold text-forest-900">Pedido confirmado!</h1>
-        <p className="text-forest-500">
-          Combine a entrega e o pagamento pessoalmente com o administrador. Acompanhe o status no seu perfil.
-        </p>
-      </div>
-    )
+    return <PurchaseConfirmation />
   }
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold text-forest-900">Carrinho</h1>
+      <BackButton />
+      <Breadcrumbs items={[{ label: 'Início', to: '/' }, { label: 'Carrinho' }]} />
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold text-forest-900">Carrinho</h1>
+        <Link to="/" className="text-sm font-medium text-forest-600 hover:text-forest-800">
+          Continuar comprando
+        </Link>
+      </div>
       {loading ? (
         <p className="text-forest-400">Carregando...</p>
       ) : rows.length === 0 ? (
-        <p className="text-forest-400">Seu carrinho está vazio.</p>
+        <div className="text-center">
+          <p className="mb-4 text-forest-400">Seu carrinho está vazio.</p>
+          <Link
+            to="/"
+            className="inline-block rounded-full bg-forest-600 px-5 py-2.5 font-medium text-cream-50 hover:bg-forest-700"
+          >
+            Continuar comprando
+          </Link>
+        </div>
       ) : (
         <div className="flex flex-col gap-3">
           {rows.map((row) => {

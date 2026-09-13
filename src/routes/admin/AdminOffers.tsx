@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { supabase } from '../../lib/supabase'
+import Breadcrumbs from '../../components/Breadcrumbs'
+import BackButton from '../../components/BackButton'
 import type { OfferStatus } from '../../lib/database.types'
 
 interface OfferRow {
@@ -94,6 +96,8 @@ export default function AdminOffers() {
 
   return (
     <div>
+      <BackButton />
+      <Breadcrumbs items={[{ label: 'Início', to: '/' }, { label: 'Admin' }, { label: 'Ofertas recebidas' }]} />
       <h1 className="mb-6 text-2xl font-bold text-forest-900">Ofertas recebidas</h1>
       {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
 

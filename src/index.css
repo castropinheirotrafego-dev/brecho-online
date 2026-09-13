@@ -1,25 +1,25 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-cream-50: #fdfcfa;
-  --color-cream-100: #f7f3ec;
-  --color-cream-200: #f0e9dc;
-  --color-cream-300: #e6dcc8;
+  --color-cream-50: #fcfcfc;
+  --color-cream-100: #f7f2ef;
+  --color-cream-200: #efe4de;
+  --color-cream-300: #d2c0b6;
 
-  --color-forest-50: #f2f5f2;
-  --color-forest-100: #dce5dd;
-  --color-forest-400: #4b5f4d;
-  --color-forest-500: #384a3a;
-  --color-forest-600: #2d3d2f;
-  --color-forest-700: #232f25;
-  --color-forest-900: #141a15;
+  --color-forest-50: #f7f1ee;
+  --color-forest-100: #ecdfd8;
+  --color-forest-400: #ad947e;
+  --color-forest-500: #9d7166;
+  --color-forest-600: #8a5f54;
+  --color-forest-700: #714c43;
+  --color-forest-900: #3c2a25;
 }
 
 body {
   margin: 0;
   font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
-  color: #232f25;
-  background: #f7f3ec;
+  color: #3c2a25;
+  background: #f7f2ef;
 }
 
 #root {
@@ -30,4 +30,13 @@ body {
 
 img {
   max-width: 100%;
+}
+
+/* Evita que o teclado mobile comprima layouts com altura fixa (100vh) */
+.min-h-screen {
+  min-height: 100svh;
+}
+
+html {
+  scroll-behavior: smooth;
 }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Search, ArrowRight } from 'lucide-react'
+import { useSearchParams } from 'react-router-dom'
+import { Search } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import ItemCard, { type ItemCardData } from '../components/ItemCard'
 import type { ItemType } from '../lib/database.types'
@@ -11,26 +12,59 @@ const typeOptions: { value: ItemType | ''; label: string }[] = [
   { value: 'bolsa', label: 'Bolsas' },
 ]
 
+const sizeOptions = [
+  '',
+  'PP',
+  'P',
+  'M',
+  'G',
+  'GG',
+  '34',
+  '35',
+  '36',
+  '37',
+  '38',
+  '39',
+  '40',
+  '41',
+  '42',
+  '43',
+  '44',
+  'Única',
+]
+
+const sortOptions: { value: string; label: string; column: string; ascending: boolean }[] = [
+  { value: 'recent', label: 'Mais recentes', column: 'created_at', ascending: false },
+  { value: 'price_asc', label: 'Menor preço', column: 'price', ascending: true },
+  { value: 'price_desc', label: 'Maior preço', column: 'price', ascending: false },
+  { value: 'size', label: 'Tamanho', column: 'size', ascending: true },
+  { value: 'type', label: 'Tipo', column: 'type', ascending: true },
+  { value: 'name', label: 'Ordem alfabética', column: 'name', ascending: true },
+]
+
 export default function Home() {
+  const [searchParams] = useSearchParams()
   const [items, setItems] = useState<ItemCardData[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [type, setType] = useState<ItemType | ''>('')
+  const [type, setType] = useState<ItemType | ''>((searchParams.get('tipo') as ItemType | null) ?? '')
   const [size, setSize] = useState('')
   const [maxPrice, setMaxPrice] = useState('')
+  const [sort, setSort] = useState('recent')
 
   useEffect(() => {
     setLoading(true)
     const timeout = setTimeout(async () => {
+      const sortConfig = sortOptions.find((s) => s.value === sort) ?? sortOptions[0]
       let query = supabase
         .from('items')
         .select('id, name, price, size, type, item_images(storage_path, position)')
         .eq('status', 'available')
-        .order('created_at', { ascending: false })
+        .order(sortConfig.column, { ascending: sortConfig.ascending })
 
       if (search.trim()) query = query.ilike('name', `%${search.trim()}%`)
       if (type) query = query.eq('type', type)
-      if (size.trim()) query = query.ilike('size', size.trim())
+      if (size) query = query.eq('size', size)
       if (maxPrice.trim()) {
         const value = Number(maxPrice.replace(',', '.'))
         if (!Number.isNaN(value)) query = query.lte('price', value)
@@ -57,25 +91,15 @@ export default function Home() {
     }, 300)
 
     return () => clearTimeout(timeout)
-  }, [search, type, size, maxPrice])
+  }, [search, type, size, maxPrice, sort])
 
   return (
     <div>
-      <section className="mb-8 grid gap-6 rounded-2xl bg-cream-200 p-8 md:grid-cols-2 md:items-center">
-        <div>
-          <h1 className="text-3xl font-bold leading-tight text-forest-900 md:text-4xl">
-            Roupas que ganham novas histórias
-          </h1>
-          <p className="mt-3 text-forest-500">
-            Peças selecionadas, com preços justos, esperando por você.
-          </p>
-          <a
-            href="#catalogo"
-            className="mt-5 inline-flex items-center gap-2 rounded-full bg-forest-600 px-5 py-2.5 font-medium text-cream-50 hover:bg-forest-700"
-          >
-            Ver peças <ArrowRight size={18} />
-          </a>
-        </div>
+      <section className="mb-8 rounded-2xl bg-cream-200 p-8">
+        <h1 className="text-3xl font-bold leading-tight text-forest-900 md:text-4xl">
+          Roupas que ganham novas histórias
+        </h1>
+        <p className="mt-3 text-forest-500">Peças selecionadas, com preços justos, esperando por você.</p>
       </section>
 
       <div id="catalogo" className="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
@@ -99,18 +123,38 @@ export default function Home() {
             </option>
           ))}
         </select>
-        <input
+        <select
           value={size}
           onChange={(e) => setSize(e.target.value)}
-          placeholder="Tamanho"
-          className="w-28 rounded-full border border-cream-300 bg-white px-4 py-2 outline-none focus:border-forest-500"
-        />
+          className="rounded-full border border-cream-300 bg-white px-4 py-2 outline-none focus:border-forest-500"
+        >
+          <option value="">Todos os tamanhos</option>
+          {sizeOptions
+            .filter((s) => s)
+            .map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+        </select>
         <input
           value={maxPrice}
           onChange={(e) => setMaxPrice(e.target.value)}
           placeholder="Preço até (R$)"
+          inputMode="decimal"
           className="w-36 rounded-full border border-cream-300 bg-white px-4 py-2 outline-none focus:border-forest-500"
         />
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value)}
+          className="rounded-full border border-cream-300 bg-white px-4 py-2 outline-none focus:border-forest-500"
+        >
+          {sortOptions.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              Ordenar: {opt.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       {loading ? (

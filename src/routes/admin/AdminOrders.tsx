@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
+import Breadcrumbs from '../../components/Breadcrumbs'
+import BackButton from '../../components/BackButton'
 import type { OrderStatus } from '../../lib/database.types'
 
 interface OrderRow {
@@ -62,6 +64,8 @@ export default function AdminOrders() {
 
   return (
     <div>
+      <BackButton />
+      <Breadcrumbs items={[{ label: 'Início', to: '/' }, { label: 'Admin' }, { label: 'Pedidos' }]} />
       <h1 className="mb-6 text-2xl font-bold text-forest-900">Pedidos</h1>
 
       {loading ? (

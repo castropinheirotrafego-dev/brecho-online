@@ -1,5 +1,5 @@
 export type ItemType = 'roupa' | 'sapato' | 'bolsa'
-export type ItemStatus = 'available' | 'reserved' | 'sold'
+export type ItemStatus = 'available' | 'negotiating' | 'reserved' | 'sold'
 export type OrderStatus = 'pending_delivery' | 'completed' | 'cancelled'
 export type OfferStatus = 'pending' | 'accepted' | 'rejected' | 'cancelled'
 export type OfferRoundAuthor = 'buyer' | 'admin'
@@ -205,6 +205,10 @@ export interface Database {
       checkout_cart: {
         Args: Record<string, never>
         Returns: Database['public']['Tables']['orders']['Row'][]
+      }
+      buy_now: {
+        Args: { p_item_id: string }
+        Returns: Database['public']['Tables']['orders']['Row']
       }
       create_offer: {
         Args: { p_item_id: string; p_amount: number; p_message?: string | null }

@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import Breadcrumbs from '../components/Breadcrumbs'
+import BackButton from '../components/BackButton'
 import type { OfferStatus, OrderStatus } from '../lib/database.types'
 
 interface OrderRow {
@@ -35,6 +38,7 @@ const offerStatusLabels: Record<OfferStatus, string> = {
 
 export default function Profile() {
   const { user, profile } = useAuth()
+  const location = useLocation()
   const [phone, setPhone] = useState('')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -87,6 +91,12 @@ export default function Profile() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
 
+  useEffect(() => {
+    if (location.hash === '#negociacoes') {
+      document.getElementById('negociacoes')?.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [location.hash, offers.length])
+
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
     if (!user) return
@@ -106,6 +116,8 @@ export default function Profile() {
 
   return (
     <div>
+      <BackButton />
+      <Breadcrumbs items={[{ label: 'Início', to: '/' }, { label: 'Meu perfil' }]} />
       <h1 className="mb-6 text-2xl font-bold text-forest-900">Meu perfil</h1>
 
       <form onSubmit={handleSave} className="mb-10 flex max-w-md flex-col gap-4">
@@ -139,7 +151,9 @@ export default function Profile() {
         {saved && <p className="text-sm text-green-700">Perfil atualizado!</p>}
       </form>
 
-      <h2 className="mb-3 text-xl font-semibold text-forest-900">Minhas negociações</h2>
+      <h2 id="negociacoes" className="mb-3 scroll-mt-24 text-xl font-semibold text-forest-900">
+        Minhas negociações
+      </h2>
       {offers.length === 0 ? (
         <p className="mb-8 text-forest-400">Você ainda não fez nenhuma oferta.</p>
       ) : (
@@ -156,26 +170,30 @@ export default function Profile() {
                 {offer.last_author === 'admin' ? 'Contraproposta: ' : 'Sua oferta: '}
                 {offer.last_amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
               </p>
-              {offer.status === 'pending' && offer.last_author === 'admin' && (
-                <div className="mt-3 flex gap-2">
-                  <button
-                    onClick={() => respondOffer(offer.id, 'accept')}
-                    disabled={respondingId === offer.id}
-                    className="rounded-full bg-forest-600 px-4 py-1.5 text-sm font-medium text-cream-50 hover:bg-forest-700 disabled:opacity-50"
-                  >
-                    Aceitar
-                  </button>
-                  <button
-                    onClick={() => respondOffer(offer.id, 'cancel')}
-                    disabled={respondingId === offer.id}
-                    className="rounded-full border border-cream-300 px-4 py-1.5 text-sm text-forest-600 disabled:opacity-50"
-                  >
-                    Desistir
-                  </button>
-                </div>
-              )}
-              {offer.status === 'pending' && offer.last_author === 'buyer' && (
-                <p className="mt-2 text-xs text-forest-400">Aguardando resposta do administrador.</p>
+              {offer.status === 'pending' && (
+                <>
+                  {offer.last_author === 'buyer' && (
+                    <p className="mt-2 text-xs text-forest-400">Aguardando resposta da administradora.</p>
+                  )}
+                  <div className="mt-3 flex gap-2">
+                    {offer.last_author === 'admin' && (
+                      <button
+                        onClick={() => respondOffer(offer.id, 'accept')}
+                        disabled={respondingId === offer.id}
+                        className="rounded-full bg-forest-600 px-4 py-1.5 text-sm font-medium text-cream-50 hover:bg-forest-700 disabled:opacity-50"
+                      >
+                        Aceitar
+                      </button>
+                    )}
+                    <button
+                      onClick={() => respondOffer(offer.id, 'cancel')}
+                      disabled={respondingId === offer.id}
+                      className="rounded-full border border-cream-300 px-4 py-1.5 text-sm text-forest-600 disabled:opacity-50"
+                    >
+                      Desistir da negociação
+                    </button>
+                  </div>
+                </>
               )}
             </div>
           ))}
