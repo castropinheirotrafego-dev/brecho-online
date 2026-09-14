@@ -1,6 +1,6 @@
 import { supabase } from './supabase'
 
-export async function getAdminWhatsappUrl(message: string): Promise<string | null> {
+export async function getAdminPhoneDigits(): Promise<string | null> {
   const { data } = await supabase
     .from('profiles')
     .select('phone')
@@ -12,6 +12,15 @@ export async function getAdminWhatsappUrl(message: string): Promise<string | nul
   const digits = data?.phone?.replace(/\D/g, '')
   if (!digits) return null
 
-  const phone = digits.length <= 11 ? `55${digits}` : digits
-  return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
+  return digits.length <= 11 ? `55${digits}` : digits
+}
+
+export function buildWhatsappUrl(phoneDigits: string, message: string): string {
+  return `https://wa.me/${phoneDigits}?text=${encodeURIComponent(message)}`
+}
+
+export async function getAdminWhatsappUrl(message: string): Promise<string | null> {
+  const phone = await getAdminPhoneDigits()
+  if (!phone) return null
+  return buildWhatsappUrl(phone, message)
 }

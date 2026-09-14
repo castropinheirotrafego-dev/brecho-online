@@ -24,6 +24,13 @@ const statusLabels: Record<OfferStatus, string> = {
   cancelled: 'Cancelada',
 }
 
+const statusColors: Record<OfferStatus, string> = {
+  pending: 'bg-amber-100 text-amber-700',
+  accepted: 'bg-green-100 text-green-700',
+  rejected: 'bg-red-100 text-red-700',
+  cancelled: 'bg-gray-200 text-gray-600',
+}
+
 export default function AdminOffers() {
   const [offers, setOffers] = useState<OfferRow[]>([])
   const [loading, setLoading] = useState(true)
@@ -194,7 +201,7 @@ export default function AdminOffers() {
                   <p className="text-forest-700">
                     {offer.buyer_name} — {offer.item_name}
                   </p>
-                  <span className="rounded-full bg-cream-200 px-3 py-1 text-xs text-forest-600">
+                  <span className={`rounded-full px-3 py-1 text-xs font-medium ${statusColors[offer.status]}`}>
                     {statusLabels[offer.status]}
                   </span>
                 </div>

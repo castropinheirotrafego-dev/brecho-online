@@ -1,19 +1,15 @@
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { itemTypeLabels } from '../lib/itemTypes'
+import type { ItemType } from '../lib/database.types'
 
 export interface ItemCardData {
   id: string
   name: string
   price: number
   size: string | null
-  type: string
+  type: ItemType
   cover_path: string | null
-}
-
-const typeLabels: Record<string, string> = {
-  roupa: 'Roupa',
-  sapato: 'Sapato',
-  bolsa: 'Bolsa',
 }
 
 export default function ItemCard({ item }: { item: ItemCardData }) {
@@ -43,7 +39,7 @@ export default function ItemCard({ item }: { item: ItemCardData }) {
           {item.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
         </p>
         <div className="mt-1 flex items-center justify-between text-xs text-forest-400">
-          <span>{typeLabels[item.type] ?? item.type}</span>
+          <span>{itemTypeLabels[item.type] ?? item.type}</span>
           {item.size && <span>Tam. {item.size}</span>}
         </div>
       </div>

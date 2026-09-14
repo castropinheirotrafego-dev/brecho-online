@@ -20,6 +20,12 @@ const statusLabels: Record<OrderStatus, string> = {
   cancelled: 'Cancelado',
 }
 
+const statusColors: Record<OrderStatus, string> = {
+  pending_delivery: 'bg-blue-100 text-blue-700',
+  completed: 'bg-green-100 text-green-700',
+  cancelled: 'bg-gray-200 text-gray-600',
+}
+
 export default function AdminOrders() {
   const [orders, setOrders] = useState<OrderRow[]>([])
   const [loading, setLoading] = useState(true)
@@ -127,7 +133,7 @@ export default function AdminOrders() {
                   <p className="text-forest-700">
                     {order.buyer_name} — {order.item_name}
                   </p>
-                  <span className="rounded-full bg-cream-200 px-3 py-1 text-xs text-forest-600">
+                  <span className={`rounded-full px-3 py-1 text-xs font-medium ${statusColors[order.status]}`}>
                     {statusLabels[order.status]}
                   </span>
                 </div>

@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, LogOut, Tag } from 'lucide-react'
+import { LayoutDashboard, LogOut, MessageCircle, Tag } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { buildWhatsappUrl, getAdminPhoneDigits } from '../lib/whatsapp'
 import Breadcrumbs from '../components/Breadcrumbs'
 import BackButton from '../components/BackButton'
 import type { OfferStatus, OrderStatus } from '../lib/database.types'
@@ -37,6 +38,19 @@ const offerStatusLabels: Record<OfferStatus, string> = {
   cancelled: 'Cancelada',
 }
 
+const offerStatusColors: Record<OfferStatus, string> = {
+  pending: 'bg-amber-100 text-amber-700',
+  accepted: 'bg-green-100 text-green-700',
+  rejected: 'bg-red-100 text-red-700',
+  cancelled: 'bg-gray-200 text-gray-600',
+}
+
+const orderStatusColors: Record<OrderStatus, string> = {
+  pending_delivery: 'bg-blue-100 text-blue-700',
+  completed: 'bg-green-100 text-green-700',
+  cancelled: 'bg-gray-200 text-gray-600',
+}
+
 export default function Profile() {
   const { user, profile, signOut } = useAuth()
   const location = useLocation()
@@ -48,6 +62,7 @@ export default function Profile() {
   const [offers, setOffers] = useState<OfferRow[]>([])
   const [respondingId, setRespondingId] = useState<string | null>(null)
   const [offerError, setOfferError] = useState<string | null>(null)
+  const [adminPhone, setAdminPhone] = useState<string | null>(null)
 
   useEffect(() => {
     if (profile) setPhone(profile.phone)
@@ -91,6 +106,7 @@ export default function Profile() {
 
   useEffect(() => {
     loadData()
+    getAdminPhoneDigits().then(setAdminPhone)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
 
@@ -197,7 +213,7 @@ export default function Profile() {
             <div key={offer.id} className="rounded-xl border border-cream-300 bg-white p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="font-medium text-forest-900">{offer.item_name}</p>
-                <span className="rounded-full bg-cream-200 px-3 py-1 text-xs text-forest-600">
+                <span className={`rounded-full px-3 py-1 text-xs font-medium ${offerStatusColors[offer.status]}`}>
                   {offerStatusLabels[offer.status]}
                 </span>
               </div>
@@ -230,6 +246,20 @@ export default function Profile() {
                   </div>
                 </>
               )}
+              {offer.status === 'accepted' && adminPhone && (
+                <a
+                  href={buildWhatsappUrl(
+                    adminPhone,
+                    `Olá! Minha oferta para "${offer.item_name}" foi aceita e gostaria de combinar a entrega e o pagamento.`,
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 inline-flex items-center gap-2 rounded-full bg-green-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-green-700"
+                >
+                  <MessageCircle size={16} />
+                  Conversar no WhatsApp
+                </a>
+              )}
             </div>
           ))}
         </div>
@@ -251,7 +281,7 @@ export default function Profile() {
                   {order.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                 </p>
               </div>
-              <span className="rounded-full bg-cream-200 px-3 py-1 text-xs text-forest-600">
+              <span className={`rounded-full px-3 py-1 text-xs font-medium ${orderStatusColors[order.status]}`}>
                 {orderStatusLabels[order.status]}
               </span>
             </div>

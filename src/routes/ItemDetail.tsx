@@ -6,6 +6,8 @@ import { useCart } from '../contexts/CartContext'
 import Breadcrumbs from '../components/Breadcrumbs'
 import BackButton from '../components/BackButton'
 import PurchaseConfirmation from '../components/PurchaseConfirmation'
+import { itemTypeLabels } from '../lib/itemTypes'
+import type { ItemType } from '../lib/database.types'
 
 interface ItemDetailData {
   id: string
@@ -13,15 +15,9 @@ interface ItemDetailData {
   description: string | null
   price: number
   size: string | null
-  type: string
+  type: ItemType
   status: string
   images: { storage_path: string; position: number }[]
-}
-
-const typeLabels: Record<string, string> = {
-  roupa: 'Roupa',
-  sapato: 'Sapato',
-  bolsa: 'Bolsa',
 }
 
 export default function ItemDetail() {
@@ -133,7 +129,7 @@ export default function ItemDetail() {
     ? supabase.storage.from('item-photos').getPublicUrl(images[activeImage].storage_path).data.publicUrl
     : null
   const available = item.status === 'available'
-  const typeLabel = typeLabels[item.type] ?? item.type
+  const typeLabel = itemTypeLabels[item.type] ?? item.type
 
   return (
     <div>

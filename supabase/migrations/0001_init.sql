@@ -54,8 +54,11 @@ as $$
   select coalesce((select is_admin from public.profiles where id = auth.uid()), false);
 $$;
 
--- Peças do closet (roupas, sapatos, bolsas)
-create type public.item_type as enum ('roupa', 'sapato', 'bolsa');
+-- Peças do closet
+create type public.item_type as enum (
+  'conjuntos', 'jaquetas-casacos', 'vestidos', 'blusas-camisetas', 'camisas',
+  'shorts', 'saias', 'calcas', 'sapatos', 'tenis', 'botas', 'bolsas'
+);
 create type public.item_category as enum ('adulto', 'infantil');
 create type public.item_status as enum ('available', 'negotiating', 'reserved', 'sold');
 

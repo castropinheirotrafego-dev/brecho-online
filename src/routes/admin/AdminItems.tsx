@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import Breadcrumbs from '../../components/Breadcrumbs'
 import BackButton from '../../components/BackButton'
+import { itemTypeOptions, sizeOptions } from '../../lib/itemTypes'
 import type { ItemCategory, ItemStatus, ItemType } from '../../lib/database.types'
 
 interface ItemRow {
@@ -32,29 +33,9 @@ const statusColors: Record<ItemStatus, string> = {
   sold: 'bg-gray-200 text-gray-600',
 }
 
-const sizeOptions = [
-  'PP',
-  'P',
-  'M',
-  'G',
-  'GG',
-  '34',
-  '35',
-  '36',
-  '37',
-  '38',
-  '39',
-  '40',
-  '41',
-  '42',
-  '43',
-  '44',
-  'Única',
-]
-
 const emptyForm = {
   name: '',
-  type: 'roupa' as ItemType,
+  type: 'blusas-camisetas' as ItemType,
   category: 'adulto' as ItemCategory,
   size: '',
   price: '',
@@ -223,9 +204,11 @@ export default function AdminItems() {
             onChange={(e) => setType(e.target.value as ItemType)}
             className="rounded-lg border border-cream-300 px-4 py-2 outline-none focus:border-forest-500"
           >
-            <option value="roupa">Roupa</option>
-            <option value="sapato">Sapato</option>
-            <option value="bolsa">Bolsa</option>
+            {itemTypeOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
           </select>
           <select
             value={category}
@@ -233,7 +216,7 @@ export default function AdminItems() {
             className="rounded-lg border border-cream-300 px-4 py-2 outline-none focus:border-forest-500"
           >
             <option value="adulto">Adulto</option>
-            <option value="infantil">Infantil</option>
+            <option value="infantil">Kids</option>
           </select>
         </div>
 

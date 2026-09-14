@@ -3,50 +3,18 @@ import { useSearchParams } from 'react-router-dom'
 import { Search } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import ItemCard, { type ItemCardData } from '../components/ItemCard'
-import type { ItemCategory, ItemType } from '../lib/database.types'
+import Hero from '../components/Hero'
+import CategoryQuickFilters from '../components/CategoryQuickFilters'
+import FiltersPanel, { type FilterValues } from '../components/FiltersPanel'
+import type { ItemType } from '../lib/database.types'
 
-const typeOptions: { value: ItemType | ''; label: string }[] = [
-  { value: '', label: 'Todos os tipos' },
-  { value: 'roupa', label: 'Roupas' },
-  { value: 'sapato', label: 'Sapatos' },
-  { value: 'bolsa', label: 'Bolsas' },
-]
-
-const categoryOptions: { value: ItemCategory | ''; label: string }[] = [
-  { value: '', label: 'Todas as categorias' },
-  { value: 'adulto', label: 'Adulto' },
-  { value: 'infantil', label: 'Infantil' },
-]
-
-const sizeOptions = [
-  '',
-  'PP',
-  'P',
-  'M',
-  'G',
-  'GG',
-  '34',
-  '35',
-  '36',
-  '37',
-  '38',
-  '39',
-  '40',
-  '41',
-  '42',
-  '43',
-  '44',
-  'Única',
-]
-
-const sortOptions: { value: string; label: string; column: string; ascending: boolean }[] = [
-  { value: 'recent', label: 'Mais recentes', column: 'created_at', ascending: false },
-  { value: 'price_asc', label: 'Menor preço', column: 'price', ascending: true },
-  { value: 'price_desc', label: 'Maior preço', column: 'price', ascending: false },
-  { value: 'size', label: 'Tamanho', column: 'size', ascending: true },
-  { value: 'type', label: 'Tipo', column: 'type', ascending: true },
-  { value: 'name', label: 'Ordem alfabética', column: 'name', ascending: true },
-]
+const sortColumns: Record<string, { column: string; ascending: boolean }> = {
+  recent: { column: 'created_at', ascending: false },
+  price_asc: { column: 'price', ascending: true },
+  price_desc: { column: 'price', ascending: false },
+  size: { column: 'size', ascending: true },
+  name: { column: 'name', ascending: true },
+}
 
 export default function Home() {
   const [searchParams] = useSearchParams()
@@ -54,15 +22,12 @@ export default function Home() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [type, setType] = useState<ItemType | ''>((searchParams.get('tipo') as ItemType | null) ?? '')
-  const [category, setCategory] = useState<ItemCategory | ''>('')
-  const [size, setSize] = useState('')
-  const [maxPrice, setMaxPrice] = useState('')
-  const [sort, setSort] = useState('recent')
+  const [filters, setFilters] = useState<FilterValues>({ category: '', size: '', maxPrice: '', sort: 'recent' })
 
   useEffect(() => {
     setLoading(true)
     const timeout = setTimeout(async () => {
-      const sortConfig = sortOptions.find((s) => s.value === sort) ?? sortOptions[0]
+      const sortConfig = sortColumns[filters.sort] ?? sortColumns.recent
       let query = supabase
         .from('items')
         .select('id, name, price, size, type, category, item_images(storage_path, position)')
@@ -71,10 +36,10 @@ export default function Home() {
 
       if (search.trim()) query = query.ilike('name', `%${search.trim()}%`)
       if (type) query = query.eq('type', type)
-      if (category) query = query.eq('category', category)
-      if (size) query = query.eq('size', size)
-      if (maxPrice.trim()) {
-        const value = Number(maxPrice.replace(',', '.'))
+      if (filters.category) query = query.eq('category', filters.category)
+      if (filters.size) query = query.eq('size', filters.size)
+      if (filters.maxPrice) {
+        const value = Number(filters.maxPrice)
         if (!Number.isNaN(value)) query = query.lte('price', value)
       }
 
@@ -99,19 +64,16 @@ export default function Home() {
     }, 300)
 
     return () => clearTimeout(timeout)
-  }, [search, type, category, size, maxPrice, sort])
+  }, [search, type, filters])
 
   return (
     <div>
-      <section className="mb-8 rounded-2xl bg-cream-200 p-8">
-        <h1 className="text-3xl font-bold leading-tight text-forest-900 md:text-4xl">
-          Roupas que ganham novas histórias
-        </h1>
-        <p className="mt-3 text-forest-500">Novas histórias para vestir, do adulto ao infantil.</p>
-      </section>
+      <Hero />
 
-      <div id="catalogo" className="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-        <div className="relative flex-1 sm:min-w-[220px]">
+      <CategoryQuickFilters value={type} onChange={setType} />
+
+      <div id="catalogo" className="mb-6 flex flex-wrap items-center gap-3">
+        <div className="relative min-w-[220px] flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-forest-400" size={18} />
           <input
             value={search}
@@ -120,60 +82,11 @@ export default function Home() {
             className="w-full rounded-full border border-cream-300 bg-white py-2 pl-10 pr-4 outline-none focus:border-forest-500"
           />
         </div>
-        <select
-          value={type}
-          onChange={(e) => setType(e.target.value as ItemType | '')}
-          className="rounded-full border border-cream-300 bg-white px-4 py-2 outline-none focus:border-forest-500"
-        >
-          {typeOptions.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value as ItemCategory | '')}
-          className="rounded-full border border-cream-300 bg-white px-4 py-2 outline-none focus:border-forest-500"
-        >
-          {categoryOptions.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-        <select
-          value={size}
-          onChange={(e) => setSize(e.target.value)}
-          className="rounded-full border border-cream-300 bg-white px-4 py-2 outline-none focus:border-forest-500"
-        >
-          <option value="">Todos os tamanhos</option>
-          {sizeOptions
-            .filter((s) => s)
-            .map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-        </select>
-        <input
-          value={maxPrice}
-          onChange={(e) => setMaxPrice(e.target.value)}
-          placeholder="Preço até (R$)"
-          inputMode="decimal"
-          className="w-36 rounded-full border border-cream-300 bg-white px-4 py-2 outline-none focus:border-forest-500"
-        />
-        <select
-          value={sort}
-          onChange={(e) => setSort(e.target.value)}
-          className="rounded-full border border-cream-300 bg-white px-4 py-2 outline-none focus:border-forest-500"
-        >
-          {sortOptions.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              Ordenar: {opt.label}
-            </option>
-          ))}
-        </select>
+        <FiltersPanel values={filters} onChange={setFilters} />
+      </div>
+
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="font-serif text-2xl font-medium text-forest-900">Achados da semana</h2>
       </div>
 
       {loading ? (
