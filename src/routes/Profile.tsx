@@ -271,19 +271,32 @@ export default function Profile() {
       ) : (
         <div className="flex flex-col gap-3">
           {orders.map((order) => (
-            <div
-              key={order.id}
-              className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-cream-300 bg-white p-4"
-            >
-              <div>
-                <p className="font-medium text-forest-900">{order.item_name}</p>
-                <p className="text-forest-600">
-                  {order.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                </p>
+            <div key={order.id} className="rounded-xl border border-cream-300 bg-white p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <p className="font-medium text-forest-900">{order.item_name}</p>
+                  <p className="text-forest-600">
+                    {order.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                  </p>
+                </div>
+                <span className={`rounded-full px-3 py-1 text-xs font-medium ${orderStatusColors[order.status]}`}>
+                  {orderStatusLabels[order.status]}
+                </span>
               </div>
-              <span className={`rounded-full px-3 py-1 text-xs font-medium ${orderStatusColors[order.status]}`}>
-                {orderStatusLabels[order.status]}
-              </span>
+              {adminPhone && (
+                <a
+                  href={buildWhatsappUrl(
+                    adminPhone,
+                    `Olá! Gostaria de falar sobre meu pedido "${order.item_name}".`,
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 inline-flex items-center gap-2 rounded-full bg-oliva px-4 py-1.5 text-sm font-medium text-white hover:bg-oliva-dark"
+                >
+                  <MessageCircle size={16} />
+                  Conversar no WhatsApp
+                </a>
+              )}
             </div>
           ))}
         </div>

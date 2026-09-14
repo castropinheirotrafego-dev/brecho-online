@@ -1,11 +1,9 @@
-import { Heart, Leaf, MapPin, Users } from 'lucide-react'
+import { Heart, Leaf } from 'lucide-react'
 import DressIcon from './DressIcon'
 
 const features = [
   { icon: Heart, label: 'Peças selecionadas' },
-  { icon: MapPin, label: 'Retirada na nossa cidade' },
   { icon: Leaf, label: 'Consumo mais consciente' },
-  { icon: Users, label: 'Atendimento personalizado' },
 ]
 
 export default function Hero() {
@@ -13,9 +11,6 @@ export default function Hero() {
     <section className="mb-8">
       <div className="grid gap-0 overflow-hidden rounded-3xl bg-cream-200 md:grid-cols-2">
         <div className="flex flex-col justify-center gap-5 p-8 md:p-10">
-          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-forest-500">
-            Moda circular mais consciente
-          </span>
           <h1 className="font-serif text-4xl font-medium leading-tight text-forest-900 md:text-5xl">
             Uma peça.
             <br />
@@ -44,7 +39,7 @@ export default function Hero() {
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-x-2 gap-y-4 rounded-2xl border border-cream-300 bg-white px-4 py-5 text-sm sm:grid-cols-4 sm:gap-4">
+      <div className="mt-6 grid grid-cols-2 gap-4 rounded-2xl border border-cream-300 bg-white px-4 py-5 text-sm">
         {features.map(({ icon: Icon, label }) => (
           <div key={label} className="flex flex-col items-center gap-1.5 text-center text-forest-700">
             <Icon size={18} className="flex-shrink-0 text-rosequeimado" />

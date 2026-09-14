@@ -1,17 +1,8 @@
+import { useEffect, useState } from 'react'
 import { Shirt } from 'lucide-react'
-import DressIcon from './DressIcon'
+import { supabase } from '../lib/supabase'
 import type { ItemType } from '../lib/database.types'
 import { quickCategoryFilters } from '../lib/itemTypes'
-
-const icons: Record<string, typeof Shirt> = {
-  '': Shirt,
-  vestidos: DressIcon as unknown as typeof Shirt,
-  'blusas-camisetas': Shirt,
-  calcas: Shirt,
-  'jaquetas-casacos': Shirt,
-  bolsas: Shirt,
-  sapatos: Shirt,
-}
 
 export default function CategoryQuickFilters({
   value,
@@ -20,11 +11,32 @@ export default function CategoryQuickFilters({
   value: ItemType | ''
   onChange: (value: ItemType | '') => void
 }) {
+  const [covers, setCovers] = useState<Record<string, string>>({})
+
+  useEffect(() => {
+    supabase
+      .from('items')
+      .select('type, item_images(storage_path, position)')
+      .eq('status', 'available')
+      .order('created_at', { ascending: false })
+      .then(({ data }) => {
+        if (!data) return
+        const next: Record<string, string> = {}
+        for (const row of data as { type: string; item_images: { storage_path: string; position: number }[] }[]) {
+          if (next[row.type]) continue
+          const sorted = [...(row.item_images ?? [])].sort((a, b) => a.position - b.position)
+          if (sorted[0]) next[row.type] = sorted[0].storage_path
+        }
+        setCovers(next)
+      })
+  }, [])
+
   return (
     <div className="mb-6 flex gap-5 overflow-x-auto pb-1">
       {quickCategoryFilters.map((opt) => {
-        const Icon = icons[opt.value] ?? Shirt
         const active = value === opt.value
+        const coverPath = covers[opt.value]
+        const coverUrl = coverPath ? supabase.storage.from('item-photos').getPublicUrl(coverPath).data.publicUrl : null
         return (
           <button
             key={opt.value || 'tudo'}
@@ -32,11 +44,17 @@ export default function CategoryQuickFilters({
             className="flex flex-shrink-0 flex-col items-center gap-2"
           >
             <span
-              className={`flex h-16 w-16 items-center justify-center rounded-full border-2 ${
-                active ? 'border-forest-600 bg-forest-50' : 'border-cream-300 bg-white'
+              className={`flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-2 ${
+                active ? 'border-forest-600' : 'border-cream-300'
               }`}
             >
-              <Icon size={26} className={active ? 'text-forest-700' : 'text-forest-400'} />
+              {coverUrl ? (
+                <img src={coverUrl} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <span className="flex h-full w-full items-center justify-center bg-white">
+                  <Shirt size={26} className={active ? 'text-forest-700' : 'text-forest-400'} />
+                </span>
+              )}
             </span>
             <span className={`text-xs ${active ? 'font-semibold text-forest-900' : 'text-forest-500'}`}>
               {opt.label}

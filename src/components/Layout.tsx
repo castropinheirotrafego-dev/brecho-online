@@ -1,11 +1,18 @@
-import { Link, Outlet } from 'react-router-dom'
+import { Link, NavLink, Outlet } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { ShoppingCart, User, LayoutDashboard, Tag } from 'lucide-react'
+import { Home, ShoppingCart, User, LayoutDashboard, Tag } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useCart } from '../contexts/CartContext'
 import { supabase } from '../lib/supabase'
 import BackToTopButton from './BackToTopButton'
 import Logo from './Logo'
+
+const mobileNavItems = [
+  { to: '/', label: 'Início', icon: Home, end: true },
+  { to: '/carrinho', label: 'Compras', icon: ShoppingCart },
+  { to: '/perfil#negociacoes', label: 'Negociações', icon: Tag },
+  { to: '/perfil', label: 'Perfil', icon: User },
+]
 
 export default function Layout() {
   const { user, profile } = useAuth()
@@ -61,7 +68,11 @@ export default function Layout() {
                     </Link>
                   </div>
                 )}
-                <Link to="/carrinho" className="relative p-2 text-forest-500 hover:text-forest-700" title="Carrinho">
+                <Link
+                  to="/carrinho"
+                  className="relative hidden p-2 text-forest-500 hover:text-forest-700 sm:block"
+                  title="Carrinho"
+                >
                   <ShoppingCart size={22} />
                   {cartCount > 0 && (
                     <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-forest-600 text-[10px] text-cream-50">
@@ -69,7 +80,7 @@ export default function Layout() {
                     </span>
                   )}
                 </Link>
-                <Link to="/perfil" className="p-2 text-forest-500 hover:text-forest-700" title="Perfil">
+                <Link to="/perfil" className="hidden p-2 text-forest-500 hover:text-forest-700 sm:block" title="Perfil">
                   <User size={22} />
                 </Link>
               </>
@@ -90,13 +101,40 @@ export default function Layout() {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 pb-24 sm:pb-6">
         <Outlet />
       </main>
 
-      <footer className="border-t border-cream-300 bg-cream-50 py-6 text-center text-sm text-forest-400">
+      <footer className="hidden border-t border-cream-300 bg-cream-50 py-6 text-center text-sm text-forest-400 sm:block">
         Próxima Dona — roupas, sapatos e bolsas que ganham novas histórias.
       </footer>
+
+      {user && (
+        <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-cream-300 bg-cream-50 sm:hidden">
+          {mobileNavItems.map(({ to, label, icon: Icon, end }) => (
+            <NavLink
+              key={label}
+              to={to}
+              end={end}
+              className={({ isActive }) =>
+                `relative flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium ${
+                  isActive ? 'text-forest-700' : 'text-forest-400'
+                }`
+              }
+            >
+              <span className="relative">
+                <Icon size={20} />
+                {label === 'Compras' && cartCount > 0 && (
+                  <span className="absolute -right-2 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-forest-600 text-[9px] text-cream-50">
+                    {cartCount}
+                  </span>
+                )}
+              </span>
+              {label}
+            </NavLink>
+          ))}
+        </nav>
+      )}
 
       <BackToTopButton />
     </div>

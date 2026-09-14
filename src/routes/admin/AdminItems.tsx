@@ -369,7 +369,7 @@ export default function AdminItems() {
       {editingId && (
         <button
           onClick={resetForm}
-          className="fixed bottom-5 left-5 z-40 flex items-center gap-1 rounded-full bg-forest-900 px-4 py-2 text-sm text-cream-50 shadow-lg sm:hidden"
+          className="fixed bottom-24 left-5 z-40 flex items-center gap-1 rounded-full bg-forest-900 px-4 py-2 text-sm text-cream-50 shadow-lg sm:hidden"
         >
           <X size={14} />
           Cancelar edição

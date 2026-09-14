@@ -65,7 +65,7 @@ export default function FiltersPanel({
       </button>
 
       {open && (
-        <div className="absolute right-0 z-20 mt-2 w-80 rounded-2xl border border-cream-300 bg-white p-4 shadow-lg">
+        <div className="absolute right-0 z-20 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-2xl border border-cream-300 bg-white p-4 shadow-lg">
           <div className="mb-3 flex items-center justify-between">
             <span className="text-sm font-semibold text-forest-900">Filtros</span>
             {activeCount > 0 && (
@@ -76,13 +76,13 @@ export default function FiltersPanel({
           </div>
 
           <div className="mb-3">
-            <label className="mb-1 block text-xs font-medium text-forest-500">Categoria</label>
+            <label className="mb-1 block text-xs font-medium text-forest-500">Moda</label>
             <select
               value={values.category}
               onChange={(e) => onChange({ ...values, category: e.target.value as ItemCategory | '' })}
               className="w-full rounded-lg border border-cream-300 px-3 py-2 outline-none focus:border-forest-500"
             >
-              <option value="">Todas as categorias</option>
+              <option value="">Todas</option>
               <option value="adulto">Adulto</option>
               <option value="infantil">Kids</option>
             </select>

@@ -91,8 +91,8 @@ export default function Home() {
 
       <CategoryQuickFilters value={type} onChange={setType} />
 
-      <div id="catalogo" className="mb-6 flex flex-wrap items-center gap-3">
-        <div className="relative min-w-[220px] flex-1">
+      <div id="catalogo" className="mb-6 flex items-center gap-3">
+        <div className="relative min-w-0 flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-forest-400" size={18} />
           <input
             value={search}
