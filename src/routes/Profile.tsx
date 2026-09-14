@@ -254,7 +254,7 @@ export default function Profile() {
                   )}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-3 inline-flex items-center gap-2 rounded-full bg-green-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-green-700"
+                  className="mt-3 inline-flex items-center gap-2 rounded-full bg-oliva px-4 py-1.5 text-sm font-medium text-white hover:bg-oliva-dark"
                 >
                   <MessageCircle size={16} />
                   Conversar no WhatsApp
