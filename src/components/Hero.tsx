@@ -7,6 +7,14 @@ const defaultSubtitle = 'Roupas, sapatos e bolsas que ganham novos começos.'
 const defaultButtonText = 'Ver peças'
 const defaultBadges = ['Peças únicas', 'Comunidade feminina', 'Moda mais consciente']
 
+function badgeEmoji(label: string) {
+  const value = label.toLowerCase()
+  if (value.includes('únic') || value.includes('unic')) return '✨'
+  if (value.includes('comunidade') || value.includes('feminin')) return '🤝'
+  if (value.includes('consciente') || value.includes('moda') || value.includes('sustent')) return '🌱'
+  return '♡'
+}
+
 export default function Hero() {
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [title, setTitle] = useState(defaultTitle)
@@ -73,12 +81,15 @@ export default function Hero() {
         </a>
 
         {badges.length > 0 && (
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-col gap-3">
             {badges.map((badge) => (
               <span
                 key={badge}
-                className="flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-full bg-oliva p-2 text-center text-[10px] font-semibold uppercase leading-tight tracking-wide text-cream-50 shadow-sm sm:h-28 sm:w-28 sm:text-xs"
+                className="flex h-16 w-16 flex-shrink-0 flex-col items-center justify-center gap-0.5 rounded-full bg-oliva p-1.5 text-center text-[9px] font-bold uppercase leading-tight tracking-wide text-cream-50 shadow-sm"
               >
+                <span aria-hidden className="text-sm leading-none">
+                  {badgeEmoji(badge)}
+                </span>
                 {badge}
               </span>
             ))}
