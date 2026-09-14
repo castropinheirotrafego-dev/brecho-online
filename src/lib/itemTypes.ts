@@ -31,10 +31,9 @@ export const itemTypeOptions: { value: ItemType; label: string }[] = (
 
 // Categorias em destaque na home (ícones circulares) — um subconjunto curado dos tipos
 export const quickCategoryFilters: { value: ItemType | ''; label: string }[] = [
-  { value: '', label: 'Tudo' },
-  { value: 'vestidos', label: 'Vestidos' },
   { value: 'blusas-camisetas', label: 'Blusas' },
   { value: 'calcas', label: 'Calças' },
+  { value: 'vestidos', label: 'Vestidos' },
   { value: 'jaquetas-casacos', label: 'Jaquetas' },
   { value: 'bolsas', label: 'Bolsas' },
   { value: 'sapatos', label: 'Sapatos' },

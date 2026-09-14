@@ -79,6 +79,16 @@ export default function Home() {
     <div>
       <Hero />
 
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="font-serif text-2xl font-medium text-forest-900">Categorias</h2>
+        <button
+          onClick={() => setType('')}
+          className="flex items-center gap-1 text-sm font-medium text-forest-600 hover:text-forest-800"
+        >
+          Ver todas <span aria-hidden>→</span>
+        </button>
+      </div>
+
       <CategoryQuickFilters value={type} onChange={setType} />
 
       <div id="catalogo" className="mb-6 flex flex-wrap items-center gap-3">
@@ -94,8 +104,21 @@ export default function Home() {
         <FiltersPanel values={filters} onChange={setFilters} />
       </div>
 
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="font-serif text-2xl font-medium text-forest-900">Achados da semana</h2>
+      <div className="mb-4 flex items-end justify-between gap-3">
+        <div>
+          <h2 className="font-serif text-2xl font-medium text-forest-900">Destaques da semana</h2>
+          <p className="mt-1 text-sm text-forest-500">Peças incríveis esperando sua próxima história.</p>
+        </div>
+        <button
+          onClick={() => {
+            setSearch('')
+            setType('')
+            setFilters({ category: '', size: '', condition: '', maxPrice: '', sort: 'recent' })
+          }}
+          className="flex flex-shrink-0 items-center gap-1 rounded-full border border-cream-300 px-4 py-2 text-sm font-medium text-forest-700 hover:bg-cream-100"
+        >
+          Ver todos <span aria-hidden>→</span>
+        </button>
       </div>
 
       {loading ? (
