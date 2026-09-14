@@ -1,138 +1,61 @@
-import { useEffect, useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, LogOut, MessageCircle, Tag } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Camera, LayoutDashboard, LogOut, Tag } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
-import { buildWhatsappUrl, getAdminPhoneDigits } from '../lib/whatsapp'
 import Breadcrumbs from '../components/Breadcrumbs'
 import BackButton from '../components/BackButton'
-import type { OfferStatus, OrderStatus } from '../lib/database.types'
-
-interface OrderRow {
-  id: string
-  price: number
-  status: OrderStatus
-  created_at: string
-  item_name: string
-}
-
-interface OfferRow {
-  id: string
-  item_id: string
-  item_name: string
-  status: OfferStatus
-  last_amount: number
-  last_author: 'buyer' | 'admin'
-}
-
-const orderStatusLabels: Record<OrderStatus, string> = {
-  pending_delivery: 'Aguardando entrega',
-  completed: 'Concluído',
-  cancelled: 'Cancelado',
-}
-
-const offerStatusLabels: Record<OfferStatus, string> = {
-  pending: 'Em negociação',
-  accepted: 'Aceita',
-  rejected: 'Recusada',
-  cancelled: 'Cancelada',
-}
-
-const offerStatusColors: Record<OfferStatus, string> = {
-  pending: 'bg-amber-100 text-amber-700',
-  accepted: 'bg-green-100 text-green-700',
-  rejected: 'bg-red-100 text-red-700',
-  cancelled: 'bg-gray-200 text-gray-600',
-}
-
-const orderStatusColors: Record<OrderStatus, string> = {
-  pending_delivery: 'bg-blue-100 text-blue-700',
-  completed: 'bg-green-100 text-green-700',
-  cancelled: 'bg-gray-200 text-gray-600',
-}
 
 export default function Profile() {
-  const { user, profile, signOut } = useAuth()
-  const location = useLocation()
+  const { user, profile, signOut, refreshProfile } = useAuth()
   const navigate = useNavigate()
-  const [phone, setPhone] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [fullName, setFullName] = useState(profile?.full_name ?? '')
+  const [phone, setPhone] = useState(profile?.phone ?? '')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
-  const [orders, setOrders] = useState<OrderRow[]>([])
-  const [offers, setOffers] = useState<OfferRow[]>([])
-  const [respondingId, setRespondingId] = useState<string | null>(null)
-  const [offerError, setOfferError] = useState<string | null>(null)
-  const [adminPhone, setAdminPhone] = useState<string | null>(null)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const [avatarError, setAvatarError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (profile) setPhone(profile.phone)
-  }, [profile])
-
-  async function loadData() {
-    if (!user) return
-    const { data: orderData } = await supabase
-      .from('orders')
-      .select('id, price, status, created_at, item:items(name)')
-      .eq('buyer_id', user.id)
-      .order('created_at', { ascending: false })
-
-    setOrders(
-      (orderData ?? []).map((row: any) => ({
-        id: row.id,
-        price: row.price,
-        status: row.status,
-        created_at: row.created_at,
-        item_name: Array.isArray(row.item) ? row.item[0]?.name : row.item?.name,
-      })),
-    )
-
-    const { data: offerData } = await supabase
-      .from('offers')
-      .select('id, item_id, status, last_amount, last_author, item:items(name)')
-      .eq('buyer_id', user.id)
-      .order('updated_at', { ascending: false })
-
-    setOffers(
-      (offerData ?? []).map((row: any) => ({
-        id: row.id,
-        item_id: row.item_id,
-        status: row.status,
-        last_amount: row.last_amount,
-        last_author: row.last_author,
-        item_name: Array.isArray(row.item) ? row.item[0]?.name : row.item?.name,
-      })),
-    )
-  }
-
-  useEffect(() => {
-    loadData()
-    getAdminPhoneDigits().then(setAdminPhone)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user])
-
-  useEffect(() => {
-    if (location.hash === '#negociacoes') {
-      document.getElementById('negociacoes')?.scrollIntoView({ behavior: 'smooth' })
+    if (profile) {
+      setFullName(profile.full_name)
+      setPhone(profile.phone)
     }
-  }, [location.hash, offers.length])
+  }, [profile])
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
     if (!user) return
     setSaving(true)
     setSaved(false)
-    await supabase.from('profiles').update({ phone }).eq('id', user.id)
+    await supabase.from('profiles').update({ full_name: fullName, phone }).eq('id', user.id)
+    await refreshProfile()
     setSaving(false)
     setSaved(true)
   }
 
-  async function respondOffer(offerId: string, action: 'accept' | 'cancel') {
-    setRespondingId(offerId)
-    setOfferError(null)
-    const { error } = await supabase.rpc('buyer_respond_offer', { p_offer_id: offerId, p_action: action })
-    if (error) setOfferError(error.message)
-    await loadData()
-    setRespondingId(null)
+  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file || !user) return
+    setAvatarError(null)
+    setUploadingAvatar(true)
+    try {
+      const path = `${user.id}/${Date.now()}-${file.name}`
+      const { error: uploadError } = await supabase.storage.from('avatars').upload(path, file, { upsert: true })
+      if (uploadError) throw uploadError
+      const { data } = supabase.storage.from('avatars').getPublicUrl(path)
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: data.publicUrl })
+        .eq('id', user.id)
+      if (updateError) throw updateError
+      await refreshProfile()
+    } catch (err) {
+      setAvatarError(err instanceof Error ? err.message : 'Erro ao enviar foto')
+    } finally {
+      setUploadingAvatar(false)
+    }
   }
 
   async function handleSignOut() {
@@ -146,12 +69,43 @@ export default function Profile() {
       <Breadcrumbs items={[{ label: 'Início', to: '/' }, { label: 'Meu perfil' }]} />
       <h1 className="mb-6 text-2xl font-bold text-forest-900">Meu perfil</h1>
 
+      <div className="mb-8 flex items-center gap-4">
+        <div className="relative">
+          <div className="h-20 w-20 overflow-hidden rounded-full border border-cream-300 bg-cream-200">
+            {profile?.avatar_url ? (
+              <img src={profile.avatar_url} alt={profile.full_name} className="h-full w-full object-cover" />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center font-serif text-2xl text-forest-500">
+                {profile?.full_name?.[0]?.toUpperCase() ?? '?'}
+              </div>
+            )}
+          </div>
+          <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploadingAvatar}
+            className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-forest-600 text-cream-50 shadow hover:bg-forest-700 disabled:opacity-50"
+            title="Alterar foto de perfil"
+          >
+            <Camera size={14} />
+          </button>
+        </div>
+        <div>
+          <p className="font-medium text-forest-900">{profile?.full_name}</p>
+          <p className="text-sm text-forest-500">{uploadingAvatar ? 'Enviando foto...' : 'Foto de perfil'}</p>
+        </div>
+      </div>
+      {avatarError && <p className="mb-4 text-sm text-red-600">{avatarError}</p>}
+
       <form onSubmit={handleSave} className="mb-10 flex max-w-md flex-col gap-4">
         <div>
           <label className="mb-1 block text-sm text-forest-500">Nome</label>
-          <p className="rounded-lg border border-cream-300 bg-cream-100 px-4 py-2 text-forest-700">
-            {profile?.full_name}
-          </p>
+          <input
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            className="w-full rounded-lg border border-cream-300 bg-white px-4 py-2 outline-none focus:border-forest-500"
+          />
         </div>
         <div>
           <label className="mb-1 block text-sm text-forest-500">E-mail</label>
@@ -178,7 +132,7 @@ export default function Profile() {
       </form>
 
       {profile?.is_admin && (
-        <div className="mb-10 flex flex-col gap-2 sm:hidden">
+        <div className="mb-10 flex flex-col gap-2">
           <h2 className="mb-1 text-xl font-semibold text-forest-900">Painel administrativo</h2>
           <Link
             to="/admin/pecas"
@@ -201,110 +155,9 @@ export default function Profile() {
         </div>
       )}
 
-      <h2 id="negociacoes" className="mb-3 scroll-mt-24 text-xl font-semibold text-forest-900">
-        Minhas negociações
-      </h2>
-      {offerError && <p className="mb-4 text-sm text-red-600">{offerError}</p>}
-      {offers.length === 0 ? (
-        <p className="mb-8 text-forest-400">Você ainda não fez nenhuma oferta.</p>
-      ) : (
-        <div className="mb-10 flex flex-col gap-3">
-          {offers.map((offer) => (
-            <div key={offer.id} className="rounded-xl border border-cream-300 bg-white p-4">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="font-medium text-forest-900">{offer.item_name}</p>
-                <span className={`rounded-full px-3 py-1 text-xs font-medium ${offerStatusColors[offer.status]}`}>
-                  {offerStatusLabels[offer.status]}
-                </span>
-              </div>
-              <p className="mt-1 text-forest-600">
-                {offer.last_author === 'admin' ? 'Contraproposta: ' : 'Sua oferta: '}
-                {offer.last_amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-              </p>
-              {offer.status === 'pending' && (
-                <>
-                  {offer.last_author === 'buyer' && (
-                    <p className="mt-2 text-xs text-forest-400">Aguardando resposta da administradora.</p>
-                  )}
-                  <div className="mt-3 flex gap-2">
-                    {offer.last_author === 'admin' && (
-                      <button
-                        onClick={() => respondOffer(offer.id, 'accept')}
-                        disabled={respondingId === offer.id}
-                        className="rounded-full bg-forest-600 px-4 py-1.5 text-sm font-medium text-cream-50 hover:bg-forest-700 disabled:opacity-50"
-                      >
-                        Aceitar
-                      </button>
-                    )}
-                    <button
-                      onClick={() => respondOffer(offer.id, 'cancel')}
-                      disabled={respondingId === offer.id}
-                      className="rounded-full border border-cream-300 px-4 py-1.5 text-sm text-forest-600 disabled:opacity-50"
-                    >
-                      Desistir da negociação
-                    </button>
-                  </div>
-                </>
-              )}
-              {offer.status === 'accepted' && adminPhone && (
-                <a
-                  href={buildWhatsappUrl(
-                    adminPhone,
-                    `Olá! Minha oferta para "${offer.item_name}" foi aceita e gostaria de combinar a entrega e o pagamento.`,
-                  )}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-3 inline-flex items-center gap-2 rounded-full bg-oliva px-4 py-1.5 text-sm font-medium text-white hover:bg-oliva-dark"
-                >
-                  <MessageCircle size={16} />
-                  Conversar no WhatsApp
-                </a>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-
-      <h2 className="mb-3 text-xl font-semibold text-forest-900">Meus pedidos</h2>
-      {orders.length === 0 ? (
-        <p className="text-forest-400">Você ainda não fez nenhum pedido.</p>
-      ) : (
-        <div className="flex flex-col gap-3">
-          {orders.map((order) => (
-            <div key={order.id} className="rounded-xl border border-cream-300 bg-white p-4">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <p className="font-medium text-forest-900">{order.item_name}</p>
-                  <p className="text-forest-600">
-                    {order.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                  </p>
-                </div>
-                <span className={`rounded-full px-3 py-1 text-xs font-medium ${orderStatusColors[order.status]}`}>
-                  {orderStatusLabels[order.status]}
-                </span>
-              </div>
-              {adminPhone && (
-                <a
-                  href={buildWhatsappUrl(
-                    adminPhone,
-                    `Olá! Gostaria de falar sobre meu pedido "${order.item_name}".`,
-                  )}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-3 inline-flex items-center gap-2 rounded-full bg-oliva px-4 py-1.5 text-sm font-medium text-white hover:bg-oliva-dark"
-                >
-                  <MessageCircle size={16} />
-                  Conversar no WhatsApp
-                </a>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-
       <button
         onClick={handleSignOut}
-        className="mt-10 flex items-center gap-2 text-sm font-medium text-forest-500 hover:text-red-600"
+        className="mt-4 flex items-center gap-2 text-sm font-medium text-forest-500 hover:text-red-600"
       >
         <LogOut size={16} />
         Sair da conta

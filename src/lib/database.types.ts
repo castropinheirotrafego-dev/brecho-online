@@ -27,6 +27,7 @@ export interface Database {
           full_name: string
           email: string
           phone: string
+          avatar_url: string | null
           is_admin: boolean
           created_at: string
         }
@@ -39,6 +40,7 @@ export interface Database {
         Update: {
           full_name?: string
           phone?: string
+          avatar_url?: string | null
         }
         Relationships: []
       }

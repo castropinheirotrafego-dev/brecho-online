@@ -4,6 +4,7 @@ create table public.profiles (
   full_name text not null,
   email text not null,
   phone text not null,
+  avatar_url text,
   is_admin boolean not null default false,
   created_at timestamptz not null default now()
 );
@@ -243,6 +244,27 @@ create policy "Admin envia fotos"
 create policy "Admin apaga fotos"
   on storage.objects for delete
   using (bucket_id = 'item-photos' and public.is_admin());
+
+-- Storage bucket para fotos de perfil (cada usuário só mexe na própria pasta)
+insert into storage.buckets (id, name, public)
+values ('avatars', 'avatars', true)
+on conflict (id) do nothing;
+
+create policy "Avatares são públicos para leitura"
+  on storage.objects for select
+  using (bucket_id = 'avatars');
+
+create policy "Usuário envia seu próprio avatar"
+  on storage.objects for insert
+  with check (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
+
+create policy "Usuário atualiza seu próprio avatar"
+  on storage.objects for update
+  using (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
+
+create policy "Usuário remove seu próprio avatar"
+  on storage.objects for delete
+  using (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
 
 -- ==========================================================================
 -- Funções de negócio (security definer): garantem atomicidade e evitam que

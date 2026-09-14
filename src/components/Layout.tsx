@@ -9,8 +9,8 @@ import Logo from './Logo'
 
 const mobileNavItems = [
   { to: '/', label: 'Início', icon: Home, end: true },
-  { to: '/carrinho', label: 'Compras', icon: ShoppingCart },
-  { to: '/perfil#negociacoes', label: 'Negociações', icon: Tag },
+  { to: '/carrinho', label: 'Carrinho', icon: ShoppingCart },
+  { to: '/negociacoes', label: 'Negociações', icon: Tag },
   { to: '/perfil', label: 'Perfil', icon: User },
 ]
 
@@ -124,7 +124,7 @@ export default function Layout() {
             >
               <span className="relative">
                 <Icon size={20} />
-                {label === 'Compras' && cartCount > 0 && (
+                {label === 'Carrinho' && cartCount > 0 && (
                   <span className="absolute -right-2 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-forest-600 text-[9px] text-cream-50">
                     {cartCount}
                   </span>

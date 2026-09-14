@@ -10,6 +10,7 @@ import SignUp from './routes/SignUp'
 import ItemDetail from './routes/ItemDetail'
 import Cart from './routes/Cart'
 import Profile from './routes/Profile'
+import Negotiations from './routes/Negotiations'
 import AdminItems from './routes/admin/AdminItems'
 import AdminOffers from './routes/admin/AdminOffers'
 import AdminOrders from './routes/admin/AdminOrders'
@@ -38,6 +39,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="negociacoes"
+              element={
+                <ProtectedRoute>
+                  <Negotiations />
                 </ProtectedRoute>
               }
             />

@@ -211,7 +211,7 @@ export default function ItemDetail() {
                 Oferta enviada! Acompanhe a negociação no seu perfil.
               </p>
               <Link
-                to="/perfil#negociacoes"
+                to="/negociacoes"
                 className="w-full rounded-full bg-forest-600 px-4 py-3 text-center font-medium text-cream-50 hover:bg-forest-700"
               >
                 Acompanhar negociação
