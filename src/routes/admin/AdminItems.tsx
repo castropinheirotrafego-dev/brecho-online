@@ -15,6 +15,7 @@ interface ItemRow {
   condition: ItemCondition
   size: string | null
   price: number
+  original_price: number | null
   description: string | null
   status: ItemStatus
   cover_path: string | null
@@ -41,6 +42,7 @@ const emptyForm = {
   condition: 'seminovo' as ItemCondition,
   size: '',
   price: '',
+  originalPrice: '',
   description: '',
 }
 
@@ -58,6 +60,7 @@ export default function AdminItems() {
   const [condition, setCondition] = useState<ItemCondition>(emptyForm.condition)
   const [size, setSize] = useState(emptyForm.size)
   const [price, setPrice] = useState(emptyForm.price)
+  const [originalPrice, setOriginalPrice] = useState(emptyForm.originalPrice)
   const [description, setDescription] = useState(emptyForm.description)
   const [photos, setPhotos] = useState<File[]>([])
   const [submitting, setSubmitting] = useState(false)
@@ -68,7 +71,7 @@ export default function AdminItems() {
     const { data } = await supabase
       .from('items')
       .select(
-        'id, name, type, category, condition, size, price, description, status, item_images(storage_path, position)',
+        'id, name, type, category, condition, size, price, original_price, description, status, item_images(storage_path, position)',
       )
       .order('created_at', { ascending: false })
 
@@ -84,6 +87,7 @@ export default function AdminItems() {
           condition: row.condition,
           size: row.size,
           price: row.price,
+          original_price: row.original_price,
           description: row.description,
           status: row.status,
           cover_path: sorted[0]?.storage_path ?? null,
@@ -109,6 +113,7 @@ export default function AdminItems() {
     setCondition(emptyForm.condition)
     setSize(emptyForm.size)
     setPrice(emptyForm.price)
+    setOriginalPrice(emptyForm.originalPrice)
     setDescription(emptyForm.description)
     setPhotos([])
     setError(null)
@@ -122,6 +127,7 @@ export default function AdminItems() {
     setCondition(item.condition)
     setSize(item.size ?? '')
     setPrice(String(item.price))
+    setOriginalPrice(item.original_price != null ? String(item.original_price) : '')
     setDescription(item.description ?? '')
     setPhotos([])
     setError(null)
@@ -137,18 +143,26 @@ export default function AdminItems() {
       const priceNumber = Number(price.replace(',', '.'))
       if (Number.isNaN(priceNumber) || priceNumber < 0) throw new Error('Informe um preço válido')
 
+      let originalPriceNumber: number | null = null
+      if (originalPrice.trim()) {
+        originalPriceNumber = Number(originalPrice.replace(',', '.'))
+        if (Number.isNaN(originalPriceNumber) || originalPriceNumber < 0) {
+          throw new Error('Informe um preço original válido')
+        }
+      }
+
       let itemId = editingId
 
       if (editingId) {
         const { error: updateError } = await supabase
           .from('items')
-          .update({ name, type, category, condition, size, price: priceNumber, description })
+          .update({ name, type, category, condition, size, price: priceNumber, original_price: originalPriceNumber, description })
           .eq('id', editingId)
         if (updateError) throw updateError
       } else {
         const { data: item, error: itemError } = await supabase
           .from('items')
-          .insert({ name, type, category, condition, size, price: priceNumber, description })
+          .insert({ name, type, category, condition, size, price: priceNumber, original_price: originalPriceNumber, description })
           .select('id')
           .single()
         if (itemError || !item) throw itemError ?? new Error('Erro ao criar peça')
@@ -278,13 +292,21 @@ export default function AdminItems() {
           ))}
         </select>
 
-        <input
-          required
-          placeholder="Preço (R$)"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          className="rounded-lg border border-cream-300 px-4 py-2 outline-none focus:border-forest-500"
-        />
+        <div className="grid grid-cols-2 gap-4">
+          <input
+            required
+            placeholder="Preço (R$)"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            className="rounded-lg border border-cream-300 px-4 py-2 outline-none focus:border-forest-500"
+          />
+          <input
+            placeholder="Preço original (opcional)"
+            value={originalPrice}
+            onChange={(e) => setOriginalPrice(e.target.value)}
+            className="rounded-lg border border-cream-300 px-4 py-2 outline-none focus:border-forest-500"
+          />
+        </div>
 
         <textarea
           placeholder="Descrição"

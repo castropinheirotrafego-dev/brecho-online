@@ -7,6 +7,7 @@ export interface ItemCardData {
   id: string
   name: string
   price: number
+  original_price: number | null
   size: string | null
   type: ItemType
   condition: ItemCondition
@@ -40,7 +41,12 @@ export default function ItemCard({ item }: { item: ItemCardData }) {
           {item.size ? `Tam. ${item.size} · ` : ''}
           {itemConditionLabels[item.condition]}
         </p>
-        <p className="mt-1 text-lg font-bold text-forest-700">
+        {item.original_price != null && item.original_price > item.price && (
+          <p className="mt-1 text-xs text-gray-400 line-through">
+            {item.original_price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+          </p>
+        )}
+        <p className="text-lg font-bold text-forest-700">
           {item.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
         </p>
       </div>

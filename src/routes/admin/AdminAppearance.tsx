@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Camera, ImageIcon } from 'lucide-react'
+import { Camera, ImageIcon, Plus, X } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import Breadcrumbs from '../../components/Breadcrumbs'
 import BackButton from '../../components/BackButton'
@@ -9,17 +9,32 @@ import type { ItemType } from '../../lib/database.types'
 export default function AdminAppearance() {
   const heroInputRef = useRef<HTMLInputElement>(null)
   const [heroPath, setHeroPath] = useState<string | null>(null)
+  const [title, setTitle] = useState('')
+  const [subtitle, setSubtitle] = useState('')
+  const [buttonText, setButtonText] = useState('')
+  const [badges, setBadges] = useState<string[]>([])
+  const [newBadge, setNewBadge] = useState('')
   const [categoryImages, setCategoryImages] = useState<Record<string, string>>({})
   const [uploadingHero, setUploadingHero] = useState(false)
   const [uploadingType, setUploadingType] = useState<string | null>(null)
+  const [savingText, setSavingText] = useState(false)
+  const [savedText, setSavedText] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   async function loadData() {
     const [{ data: settings }, { data: images }] = await Promise.all([
-      supabase.from('site_settings').select('hero_image_path').eq('id', 'default').maybeSingle(),
+      supabase
+        .from('site_settings')
+        .select('hero_image_path, hero_title, hero_subtitle, hero_button_text, hero_badges')
+        .eq('id', 'default')
+        .maybeSingle(),
       supabase.from('category_images').select('type, storage_path'),
     ])
     setHeroPath(settings?.hero_image_path ?? null)
+    setTitle(settings?.hero_title ?? 'Uma peça.\nDuas histórias.')
+    setSubtitle(settings?.hero_subtitle ?? 'Roupas, sapatos e bolsas que ganham novos começos.')
+    setButtonText(settings?.hero_button_text ?? 'Ver peças')
+    setBadges(settings?.hero_badges ?? ['Peças únicas', 'Comunidade feminina', 'Moda mais consciente'])
     const next: Record<string, string> = {}
     for (const row of images ?? []) next[row.type] = row.storage_path
     setCategoryImages(next)
@@ -72,6 +87,39 @@ export default function AdminAppearance() {
     }
   }
 
+  async function handleSaveText(e: React.FormEvent) {
+    e.preventDefault()
+    setError(null)
+    setSavingText(true)
+    setSavedText(false)
+    try {
+      const { error: settingsError } = await supabase.from('site_settings').upsert({
+        id: 'default',
+        hero_title: title,
+        hero_subtitle: subtitle,
+        hero_button_text: buttonText,
+        hero_badges: badges,
+      })
+      if (settingsError) throw settingsError
+      setSavedText(true)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao salvar texto')
+    } finally {
+      setSavingText(false)
+    }
+  }
+
+  function addBadge() {
+    const value = newBadge.trim()
+    if (!value) return
+    setBadges((prev) => [...prev, value])
+    setNewBadge('')
+  }
+
+  function removeBadge(index: number) {
+    setBadges((prev) => prev.filter((_, i) => i !== index))
+  }
+
   return (
     <div>
       <BackButton />
@@ -80,16 +128,17 @@ export default function AdminAppearance() {
       {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
 
       <section className="mb-10">
-        <h2 className="mb-1 text-xl font-semibold text-forest-900">Imagem de fundo — "Uma peça. Duas histórias."</h2>
+        <h2 className="mb-1 text-xl font-semibold text-forest-900">"Uma peça. Duas histórias."</h2>
         <p className="mb-4 text-sm text-forest-500">
-          Aparece ao lado do texto de destaque na página inicial (só some no mobile).
+          Bloco de destaque da página inicial — imagem, título, texto, botão e selos.
         </p>
+
         <input ref={heroInputRef} type="file" accept="image/*" onChange={handleHeroChange} className="hidden" />
         <button
           type="button"
           onClick={() => heroInputRef.current?.click()}
           disabled={uploadingHero}
-          className="relative flex h-48 w-full max-w-md items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-cream-300 bg-cream-50 text-forest-600 hover:bg-cream-100 disabled:opacity-50"
+          className="relative mb-6 flex h-48 w-full items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-cream-300 bg-cream-50 text-forest-600 hover:bg-cream-100 disabled:opacity-50"
         >
           {heroPath ? (
             <img src={publicUrl(heroPath)} alt="" className="h-full w-full object-cover" />
@@ -105,6 +154,79 @@ export default function AdminAppearance() {
             <Camera size={14} />
           </span>
         </button>
+
+        <form onSubmit={handleSaveText} className="flex max-w-lg flex-col gap-4">
+          <div>
+            <label className="mb-1 block text-sm text-forest-500">Título (uma linha por frase)</label>
+            <textarea
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              rows={2}
+              className="w-full rounded-lg border border-cream-300 px-4 py-2 outline-none focus:border-forest-500"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm text-forest-500">Texto</label>
+            <input
+              value={subtitle}
+              onChange={(e) => setSubtitle(e.target.value)}
+              className="w-full rounded-lg border border-cream-300 px-4 py-2 outline-none focus:border-forest-500"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm text-forest-500">Texto do botão</label>
+            <input
+              value={buttonText}
+              onChange={(e) => setButtonText(e.target.value)}
+              className="w-full rounded-lg border border-cream-300 px-4 py-2 outline-none focus:border-forest-500"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm text-forest-500">Selos (ex.: Peças únicas, Comunidade feminina)</label>
+            <div className="mb-2 flex flex-wrap gap-2">
+              {badges.map((badge, i) => (
+                <span
+                  key={`${badge}-${i}`}
+                  className="flex items-center gap-1 rounded-full bg-oliva px-3 py-1 text-xs font-medium text-cream-50"
+                >
+                  {badge}
+                  <button type="button" onClick={() => removeBadge(i)} className="hover:text-red-200">
+                    <X size={12} />
+                  </button>
+                </span>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <input
+                value={newBadge}
+                onChange={(e) => setNewBadge(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    addBadge()
+                  }
+                }}
+                placeholder="Novo selo"
+                className="flex-1 rounded-lg border border-cream-300 px-4 py-2 outline-none focus:border-forest-500"
+              />
+              <button
+                type="button"
+                onClick={addBadge}
+                className="flex items-center gap-1 rounded-full border border-forest-600 px-4 py-2 text-sm font-medium text-forest-700 hover:bg-forest-50"
+              >
+                <Plus size={16} /> Adicionar
+              </button>
+            </div>
+          </div>
+          <button
+            type="submit"
+            disabled={savingText}
+            className="w-fit rounded-full bg-forest-600 px-5 py-2 font-medium text-cream-50 hover:bg-forest-700 disabled:opacity-50"
+          >
+            {savingText ? 'Salvando...' : 'Salvar'}
+          </button>
+          {savedText && <p className="text-sm text-green-700">Salvo!</p>}
+        </form>
       </section>
 
       <section>

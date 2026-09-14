@@ -2,13 +2,13 @@ import LogoMark from './LogoMark'
 
 export default function Logo() {
   return (
-    <span className="flex items-center gap-1.5 sm:flex-col sm:gap-3">
-      <LogoMark className="h-11 w-auto flex-shrink-0 sm:h-40 md:h-56" />
-      <span className="flex flex-col leading-none sm:items-center">
-        <span className="whitespace-nowrap font-serif text-lg font-semibold tracking-wide text-forest-900 sm:text-3xl md:text-4xl">
+    <span className="flex items-center gap-1.5 sm:gap-2.5">
+      <LogoMark className="h-11 w-auto flex-shrink-0 sm:h-14 md:h-16" />
+      <span className="flex flex-col leading-none">
+        <span className="whitespace-nowrap font-serif text-lg font-semibold tracking-wide text-oliva sm:text-xl md:text-2xl">
           PRÓXIMA DONA
         </span>
-        <span className="hidden text-[10px] font-medium tracking-[0.15em] text-rosequeimado sm:mt-1 sm:block sm:text-sm">
+        <span className="hidden text-[10px] font-medium tracking-[0.15em] text-rosequeimado sm:block">
           MODA COM NOVOS COMEÇOS
         </span>
       </span>

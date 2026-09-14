@@ -72,6 +72,7 @@ create table public.items (
   condition public.item_condition not null default 'seminovo',
   size text,
   price numeric(10, 2) not null check (price >= 0),
+  original_price numeric(10, 2) check (original_price >= 0),
   description text,
   status public.item_status not null default 'available',
   created_at timestamptz not null default now(),
@@ -289,6 +290,10 @@ create policy "Admin gerencia fotos de categoria"
 create table public.site_settings (
   id text primary key,
   hero_image_path text,
+  hero_title text,
+  hero_subtitle text,
+  hero_button_text text,
+  hero_badges jsonb not null default '["Peças únicas", "Comunidade feminina", "Moda mais consciente"]'::jsonb,
   updated_at timestamptz not null default now()
 );
 

@@ -53,6 +53,7 @@ export interface Database {
           condition: ItemCondition
           size: string | null
           price: number
+          original_price: number | null
           description: string | null
           status: ItemStatus
           created_at: string
@@ -65,6 +66,7 @@ export interface Database {
           condition?: ItemCondition
           size?: string | null
           price: number
+          original_price?: number | null
           description?: string | null
           status?: ItemStatus
         }
@@ -75,6 +77,7 @@ export interface Database {
           condition?: ItemCondition
           size?: string | null
           price?: number
+          original_price?: number | null
           description?: string | null
           status?: ItemStatus
         }
@@ -240,14 +243,26 @@ export interface Database {
         Row: {
           id: string
           hero_image_path: string | null
+          hero_title: string | null
+          hero_subtitle: string | null
+          hero_button_text: string | null
+          hero_badges: string[]
           updated_at: string
         }
         Insert: {
           id: string
           hero_image_path?: string | null
+          hero_title?: string | null
+          hero_subtitle?: string | null
+          hero_button_text?: string | null
+          hero_badges?: string[]
         }
         Update: {
           hero_image_path?: string | null
+          hero_title?: string | null
+          hero_subtitle?: string | null
+          hero_button_text?: string | null
+          hero_badges?: string[]
         }
         Relationships: []
       }
