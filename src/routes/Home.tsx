@@ -105,10 +105,9 @@ export default function Home() {
       </div>
 
       <div className="mb-4 flex items-end justify-between gap-3">
-        <div>
-          <h2 className="font-serif text-2xl font-medium text-forest-900">Destaques da semana</h2>
-          <p className="mt-1 text-sm text-forest-500">Peças incríveis esperando sua próxima história.</p>
-        </div>
+        <h2 className="font-serif text-2xl font-medium text-forest-900">
+          Peças incríveis esperando sua próxima história
+        </h2>
         <button
           onClick={() => {
             setSearch('')

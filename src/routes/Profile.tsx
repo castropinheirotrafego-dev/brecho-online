@@ -69,13 +69,13 @@ export default function Profile() {
       <Breadcrumbs items={[{ label: 'Início', to: '/' }, { label: 'Meu perfil' }]} />
       <h1 className="mb-6 text-2xl font-bold text-forest-900">Meu perfil</h1>
 
-      <div className="mb-8 flex items-center gap-4">
+      <div className="mb-8 flex flex-col items-center">
         <div className="relative">
-          <div className="h-20 w-20 overflow-hidden rounded-full border border-cream-300 bg-cream-200">
+          <div className="h-60 w-60 overflow-hidden rounded-full border border-cream-300 bg-cream-200">
             {profile?.avatar_url ? (
               <img src={profile.avatar_url} alt={profile.full_name} className="h-full w-full object-cover" />
             ) : (
-              <div className="flex h-full w-full items-center justify-center font-serif text-2xl text-forest-500">
+              <div className="flex h-full w-full items-center justify-center font-serif text-6xl text-forest-500">
                 {profile?.full_name?.[0]?.toUpperCase() ?? '?'}
               </div>
             )}
@@ -85,18 +85,16 @@ export default function Profile() {
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploadingAvatar}
-            className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-forest-600 text-cream-50 shadow hover:bg-forest-700 disabled:opacity-50"
+            className="absolute bottom-2 right-2 flex h-10 w-10 items-center justify-center rounded-full bg-forest-600 text-cream-50 shadow hover:bg-forest-700 disabled:opacity-50"
             title="Alterar foto de perfil"
           >
-            <Camera size={14} />
+            <Camera size={20} />
           </button>
         </div>
-        <div>
-          <p className="font-medium text-forest-900">{profile?.full_name}</p>
-          <p className="text-sm text-forest-500">{uploadingAvatar ? 'Enviando foto...' : 'Foto de perfil'}</p>
-        </div>
+        <p className="mt-4 text-center font-serif text-4xl font-semibold text-forest-900">{profile?.full_name}</p>
+        <p className="mt-1 text-sm text-forest-500">{uploadingAvatar ? 'Enviando foto...' : 'Foto de perfil'}</p>
       </div>
-      {avatarError && <p className="mb-4 text-sm text-red-600">{avatarError}</p>}
+      {avatarError && <p className="mb-4 text-center text-sm text-red-600">{avatarError}</p>}
 
       <form onSubmit={handleSave} className="mb-10 flex max-w-md flex-col gap-4">
         <div>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { MapPin, Trash2 } from 'lucide-react'
+import { Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { useCart } from '../contexts/CartContext'
@@ -23,6 +23,7 @@ export default function Cart() {
   const [checkingOut, setCheckingOut] = useState(false)
   const [done, setDone] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
   async function loadCart() {
     if (!user) return
@@ -67,6 +68,7 @@ export default function Cart() {
   }
 
   async function handleCheckout() {
+    setConfirmOpen(false)
     setCheckingOut(true)
     setError(null)
     try {
@@ -142,23 +144,12 @@ export default function Cart() {
             )
           })}
 
-          <div className="mt-2 flex gap-3 rounded-xl bg-cream-200 p-4 text-sm text-forest-700">
-            <MapPin size={20} className="mt-0.5 flex-shrink-0 text-forest-600" />
-            <div>
-              <p className="font-medium">Retirada na nossa cidade</p>
-              <p className="text-forest-500">
-                Não trabalhamos com entrega. Após a confirmação da compra, entramos em contato pelo WhatsApp para
-                combinar a retirada da sua peça.
-              </p>
-            </div>
-          </div>
-
           <div className="flex items-center justify-between rounded-xl border border-cream-300 bg-white p-4">
             <span className="font-semibold text-forest-900">
               Subtotal: {total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
             </span>
             <button
-              onClick={handleCheckout}
+              onClick={() => setConfirmOpen(true)}
               disabled={checkingOut}
               className="rounded-full bg-forest-600 px-5 py-2.5 font-medium text-cream-50 hover:bg-forest-700 disabled:opacity-50"
             >
@@ -166,6 +157,29 @@ export default function Cart() {
             </button>
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
+        </div>
+      )}
+
+      {confirmOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-forest-900/40 p-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-xl">
+            <p className="font-serif text-xl font-medium text-forest-900">Tem certeza que vai levar só isso?</p>
+            <div className="mt-6 flex flex-col gap-3">
+              <button
+                onClick={() => setConfirmOpen(false)}
+                className="w-full rounded-full border border-forest-600 px-4 py-3 font-medium text-forest-700 hover:bg-forest-50"
+              >
+                Continuar comprando
+              </button>
+              <button
+                onClick={handleCheckout}
+                disabled={checkingOut}
+                className="w-full rounded-full bg-forest-600 px-4 py-3 font-medium text-cream-50 hover:bg-forest-700 disabled:opacity-50"
+              >
+                {checkingOut ? 'Finalizando...' : 'Finalizar'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -1,12 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Heart, Leaf } from 'lucide-react'
+import { Leaf } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import DressIcon from './DressIcon'
-
-const features = [
-  { icon: Heart, label: 'Peças selecionadas' },
-  { icon: Leaf, label: 'Consumo mais consciente' },
-]
 
 export default function Hero() {
   const [imageUrl, setImageUrl] = useState<string | null>(null)
@@ -60,15 +55,6 @@ export default function Hero() {
             </span>
           )}
         </div>
-      </div>
-
-      <div className="mt-6 grid grid-cols-2 gap-4 rounded-2xl border border-cream-300 bg-white px-4 py-5 text-sm">
-        {features.map(({ icon: Icon, label }) => (
-          <div key={label} className="flex flex-col items-center gap-1.5 text-center text-forest-700">
-            <Icon size={18} className="flex-shrink-0 text-rosequeimado" />
-            <span>{label}</span>
-          </div>
-        ))}
       </div>
     </section>
   )

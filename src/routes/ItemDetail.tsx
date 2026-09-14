@@ -5,7 +5,6 @@ import { useAuth } from '../contexts/AuthContext'
 import { useCart } from '../contexts/CartContext'
 import Breadcrumbs from '../components/Breadcrumbs'
 import BackButton from '../components/BackButton'
-import PurchaseConfirmation from '../components/PurchaseConfirmation'
 import { itemConditionLabels, itemTypeLabels } from '../lib/itemTypes'
 import type { ItemCondition, ItemType } from '../lib/database.types'
 
@@ -31,9 +30,6 @@ export default function ItemDetail() {
   const [loading, setLoading] = useState(true)
   const [inCart, setInCart] = useState(false)
   const [addingToCart, setAddingToCart] = useState(false)
-  const [buying, setBuying] = useState(false)
-  const [bought, setBought] = useState(false)
-  const [buyError, setBuyError] = useState<string | null>(null)
   const [showOfferForm, setShowOfferForm] = useState(false)
   const [offerAmount, setOfferAmount] = useState('')
   const [offerMessage, setOfferMessage] = useState('')
@@ -80,22 +76,6 @@ export default function ItemDetail() {
     refreshCart()
   }
 
-  async function handleBuyNow() {
-    if (!user || !item) return navigate('/entrar')
-    setBuyError(null)
-    setBuying(true)
-    try {
-      const { error } = await supabase.rpc('buy_now', { p_item_id: item.id })
-      if (error) throw error
-      setBought(true)
-      refreshCart()
-    } catch (err) {
-      setBuyError(err instanceof Error ? err.message : 'Erro ao concluir a compra')
-    } finally {
-      setBuying(false)
-    }
-  }
-
   async function handleSendOffer(e: React.FormEvent) {
     e.preventDefault()
     if (!user || !item) return navigate('/entrar')
@@ -122,8 +102,6 @@ export default function ItemDetail() {
 
   if (loading) return <p className="py-10 text-center text-forest-400">Carregando...</p>
   if (!item) return <p className="py-10 text-center text-forest-400">Peça não encontrada.</p>
-
-  if (bought) return <PurchaseConfirmation itemName={item.name} />
 
   const images = item.images.length > 0 ? item.images : [{ storage_path: '', position: 0 }]
   const activeUrl = images[activeImage]?.storage_path
@@ -225,18 +203,10 @@ export default function ItemDetail() {
             </div>
           ) : (
             <div className="mt-6 flex flex-col gap-3">
-              {buyError && <p className="text-sm text-red-600">{buyError}</p>}
-              <button
-                onClick={handleBuyNow}
-                disabled={buying}
-                className="w-full rounded-full bg-forest-600 px-4 py-3 font-medium text-cream-50 hover:bg-forest-700 disabled:opacity-50"
-              >
-                {buying ? 'Processando...' : 'Comprar'}
-              </button>
               <button
                 onClick={handleAddToCart}
                 disabled={addingToCart || inCart}
-                className="w-full rounded-full border border-forest-600 px-4 py-3 font-medium text-forest-700 hover:bg-forest-50 disabled:opacity-50"
+                className="w-full rounded-full bg-forest-600 px-4 py-3 font-medium text-cream-50 hover:bg-forest-700 disabled:opacity-50"
               >
                 {inCart ? 'Já está no carrinho' : addingToCart ? 'Adicionando...' : 'Adicionar ao carrinho'}
               </button>
