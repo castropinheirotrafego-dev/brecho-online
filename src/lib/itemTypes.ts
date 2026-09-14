@@ -29,15 +29,8 @@ export const itemTypeOptions: { value: ItemType; label: string }[] = (
   Object.entries(itemTypeLabels) as [ItemType, string][]
 ).map(([value, label]) => ({ value, label }))
 
-// Categorias em destaque na home (ícones circulares) — um subconjunto curado dos tipos
-export const quickCategoryFilters: { value: ItemType | ''; label: string }[] = [
-  { value: 'blusas-camisetas', label: 'Blusas' },
-  { value: 'calcas', label: 'Calças' },
-  { value: 'vestidos', label: 'Vestidos' },
-  { value: 'jaquetas-casacos', label: 'Jaquetas' },
-  { value: 'bolsas', label: 'Bolsas' },
-  { value: 'sapatos', label: 'Sapatos' },
-]
+// Categorias em destaque na home (ícones circulares) — todos os tipos de peça
+export const quickCategoryFilters: { value: ItemType | ''; label: string }[] = itemTypeOptions
 
 export const priceRangeOptions = [
   { value: '', label: 'Qualquer preço' },

@@ -11,6 +11,7 @@ interface OfferRow {
   item_id: string
   item_name: string
   buyer_name: string
+  buyer_avatar: string | null
   status: OfferStatus
   last_amount: number
   last_author: 'buyer' | 'admin'
@@ -44,7 +45,7 @@ export default function AdminOffers() {
     const { data } = await supabase
       .from('offers')
       .select(
-        'id, item_id, status, last_amount, last_author, updated_at, item:items(name), buyer:profiles!offers_buyer_id_fkey(full_name)',
+        'id, item_id, status, last_amount, last_author, updated_at, item:items(name), buyer:profiles!offers_buyer_id_fkey(full_name, avatar_url)',
       )
       .order('updated_at', { ascending: false })
 
@@ -54,6 +55,7 @@ export default function AdminOffers() {
         item_id: row.item_id,
         item_name: Array.isArray(row.item) ? row.item[0]?.name : row.item?.name,
         buyer_name: Array.isArray(row.buyer) ? row.buyer[0]?.full_name : row.buyer?.full_name,
+        buyer_avatar: Array.isArray(row.buyer) ? row.buyer[0]?.avatar_url : row.buyer?.avatar_url,
         status: row.status,
         last_amount: row.last_amount,
         last_author: row.last_author,
@@ -119,13 +121,23 @@ export default function AdminOffers() {
               {pending.map((offer) => (
                 <div key={offer.id} className="rounded-xl border border-cream-300 bg-white p-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div>
-                      <p className="font-medium text-forest-900">
-                        {offer.buyer_name} — {offer.item_name}
-                      </p>
-                      <p className="text-xs text-forest-400">
-                        {formatDistanceToNow(new Date(offer.updated_at), { addSuffix: true, locale: ptBR })}
-                      </p>
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full border border-cream-300 bg-cream-200">
+                        {offer.buyer_avatar ? (
+                          <img src={offer.buyer_avatar} alt={offer.buyer_name} className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center font-serif text-sm text-forest-500">
+                            {offer.buyer_name?.[0]?.toUpperCase() ?? '?'}
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-medium text-forest-900">{offer.buyer_name}</p>
+                        <p className="text-sm text-forest-600">{offer.item_name}</p>
+                        <p className="text-xs text-forest-400">
+                          {formatDistanceToNow(new Date(offer.updated_at), { addSuffix: true, locale: ptBR })}
+                        </p>
+                      </div>
                     </div>
                     <p className="text-lg font-bold text-forest-700">
                       {offer.last_amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
@@ -198,9 +210,21 @@ export default function AdminOffers() {
                   key={offer.id}
                   className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-cream-300 bg-white p-3"
                 >
-                  <p className="text-forest-700">
-                    {offer.buyer_name} — {offer.item_name}
-                  </p>
+                  <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 flex-shrink-0 overflow-hidden rounded-full border border-cream-300 bg-cream-200">
+                      {offer.buyer_avatar ? (
+                        <img src={offer.buyer_avatar} alt={offer.buyer_name} className="h-full w-full object-cover" />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center font-serif text-xs text-forest-500">
+                          {offer.buyer_name?.[0]?.toUpperCase() ?? '?'}
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-forest-900">{offer.buyer_name}</p>
+                      <p className="text-sm text-forest-500">{offer.item_name}</p>
+                    </div>
+                  </div>
                   <span className={`rounded-full px-3 py-1 text-xs font-medium ${statusColors[offer.status]}`}>
                     {statusLabels[offer.status]}
                   </span>

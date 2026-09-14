@@ -31,7 +31,7 @@ export default function Layout() {
   return (
     <div className="flex min-h-screen flex-col bg-cream-100">
       <header className="sticky top-0 z-30 border-b border-cream-300 bg-cream-50">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:py-5">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:py-6 md:py-8">
           <Link to="/">
             <Logo />
           </Link>
@@ -92,12 +92,15 @@ export default function Layout() {
               </>
             ) : (
               <>
-                <Link to="/entrar" className="text-sm font-medium text-forest-700 hover:text-forest-900">
+                <Link
+                  to="/entrar"
+                  className="whitespace-nowrap text-sm font-medium text-forest-700 hover:text-forest-900"
+                >
                   Entrar
                 </Link>
                 <Link
                   to="/cadastro"
-                  className="rounded-full bg-forest-600 px-4 py-2 text-sm font-medium text-cream-50 hover:bg-forest-700"
+                  className="whitespace-nowrap rounded-full bg-forest-600 px-4 py-2 text-sm font-medium text-cream-50 hover:bg-forest-700"
                 >
                   Criar conta
                 </Link>

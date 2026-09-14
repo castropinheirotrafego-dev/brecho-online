@@ -71,11 +71,11 @@ export default function Profile() {
 
       <div className="mb-8 flex flex-col items-center">
         <div className="relative">
-          <div className="h-60 w-60 overflow-hidden rounded-full border border-cream-300 bg-cream-200">
+          <div className="h-48 w-48 overflow-hidden rounded-full border border-cream-300 bg-cream-200">
             {profile?.avatar_url ? (
               <img src={profile.avatar_url} alt={profile.full_name} className="h-full w-full object-cover" />
             ) : (
-              <div className="flex h-full w-full items-center justify-center font-serif text-6xl text-forest-500">
+              <div className="flex h-full w-full items-center justify-center font-serif text-5xl text-forest-500">
                 {profile?.full_name?.[0]?.toUpperCase() ?? '?'}
               </div>
             )}
@@ -92,7 +92,7 @@ export default function Profile() {
           </button>
         </div>
         <p className="mt-4 text-center font-serif text-4xl font-semibold text-forest-900">{profile?.full_name}</p>
-        <p className="mt-1 text-sm text-forest-500">{uploadingAvatar ? 'Enviando foto...' : 'Foto de perfil'}</p>
+        {uploadingAvatar && <p className="mt-1 text-sm text-forest-500">Enviando foto...</p>}
       </div>
       {avatarError && <p className="mb-4 text-center text-sm text-red-600">{avatarError}</p>}
 
