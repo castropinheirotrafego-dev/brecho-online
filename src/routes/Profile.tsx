@@ -152,6 +152,12 @@ export default function Profile() {
           >
             Pedidos
           </Link>
+          <Link
+            to="/admin/aparencia"
+            className="flex items-center gap-2 rounded-lg border border-cream-300 bg-white px-4 py-2.5 text-forest-700"
+          >
+            <Camera size={18} /> Aparência do site
+          </Link>
         </div>
       )}
 

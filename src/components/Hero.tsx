@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react'
 import { Heart, Leaf } from 'lucide-react'
+import { supabase } from '../lib/supabase'
 import DressIcon from './DressIcon'
 
 const features = [
@@ -7,6 +9,21 @@ const features = [
 ]
 
 export default function Hero() {
+  const [imageUrl, setImageUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    supabase
+      .from('site_settings')
+      .select('hero_image_path')
+      .eq('id', 'default')
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.hero_image_path) {
+          setImageUrl(supabase.storage.from('item-photos').getPublicUrl(data.hero_image_path).data.publicUrl)
+        }
+      })
+  }, [])
+
   return (
     <section className="mb-8">
       <div className="grid gap-0 overflow-hidden rounded-3xl bg-cream-200 md:grid-cols-2">
@@ -26,16 +43,22 @@ export default function Hero() {
         </div>
 
         <div className="relative hidden min-h-[320px] items-center justify-center bg-cream-300 md:flex">
-          <DressIcon size={140} className="text-forest-900/15" />
+          {imageUrl ? (
+            <img src={imageUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
+          ) : (
+            <DressIcon size={140} className="text-forest-900/15" />
+          )}
           <span className="absolute right-8 top-8 flex h-20 w-20 flex-col items-center justify-center rounded-full bg-oliva text-center text-[10px] font-semibold uppercase leading-tight text-cream-50">
             <Leaf size={16} className="mb-1" />
             Peças
             <br />
             Únicas
           </span>
-          <span className="absolute bottom-6 left-6 -rotate-3 font-serif text-sm italic text-forest-900/50">
-            Mais moda, menos desperdício
-          </span>
+          {!imageUrl && (
+            <span className="absolute bottom-6 left-6 -rotate-3 font-serif text-sm italic text-forest-900/50">
+              Mais moda, menos desperdício
+            </span>
+          )}
         </div>
       </div>
 

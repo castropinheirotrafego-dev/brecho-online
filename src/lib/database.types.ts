@@ -221,6 +221,36 @@ export interface Database {
           },
         ]
       }
+      category_images: {
+        Row: {
+          type: ItemType
+          storage_path: string
+          updated_at: string
+        }
+        Insert: {
+          type: ItemType
+          storage_path: string
+        }
+        Update: {
+          storage_path?: string
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          id: string
+          hero_image_path: string | null
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          hero_image_path?: string | null
+        }
+        Update: {
+          hero_image_path?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: Record<string, never>
     Functions: {

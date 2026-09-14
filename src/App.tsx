@@ -14,6 +14,7 @@ import Negotiations from './routes/Negotiations'
 import AdminItems from './routes/admin/AdminItems'
 import AdminOffers from './routes/admin/AdminOffers'
 import AdminOrders from './routes/admin/AdminOrders'
+import AdminAppearance from './routes/admin/AdminAppearance'
 
 export default function App() {
   return (
@@ -71,6 +72,14 @@ export default function App() {
               element={
                 <AdminRoute>
                   <AdminOrders />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="admin/aparencia"
+              element={
+                <AdminRoute>
+                  <AdminAppearance />
                 </AdminRoute>
               }
             />

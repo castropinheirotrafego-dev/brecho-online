@@ -14,21 +14,26 @@ export default function CategoryQuickFilters({
   const [covers, setCovers] = useState<Record<string, string>>({})
 
   useEffect(() => {
-    supabase
-      .from('items')
-      .select('type, item_images(storage_path, position)')
-      .eq('status', 'available')
-      .order('created_at', { ascending: false })
-      .then(({ data }) => {
-        if (!data) return
-        const next: Record<string, string> = {}
-        for (const row of data as { type: string; item_images: { storage_path: string; position: number }[] }[]) {
-          if (next[row.type]) continue
-          const sorted = [...(row.item_images ?? [])].sort((a, b) => a.position - b.position)
-          if (sorted[0]) next[row.type] = sorted[0].storage_path
-        }
-        setCovers(next)
-      })
+    Promise.all([
+      supabase
+        .from('items')
+        .select('type, item_images(storage_path, position)')
+        .eq('status', 'available')
+        .order('created_at', { ascending: false }),
+      supabase.from('category_images').select('type, storage_path'),
+    ]).then(([itemsRes, categoryImagesRes]) => {
+      const next: Record<string, string> = {}
+      const data = itemsRes.data as { type: string; item_images: { storage_path: string; position: number }[] }[] | null
+      for (const row of data ?? []) {
+        if (next[row.type]) continue
+        const sorted = [...(row.item_images ?? [])].sort((a, b) => a.position - b.position)
+        if (sorted[0]) next[row.type] = sorted[0].storage_path
+      }
+      for (const row of categoryImagesRes.data ?? []) {
+        next[row.type] = row.storage_path
+      }
+      setCovers(next)
+    })
   }, [])
 
   return (

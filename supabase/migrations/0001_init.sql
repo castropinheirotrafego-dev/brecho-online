@@ -266,6 +266,46 @@ create policy "Usuário remove seu próprio avatar"
   on storage.objects for delete
   using (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
 
+-- Foto de capa por categoria (círculos da home) — o admin pode sobrescrever
+-- a foto automática (da primeira peça cadastrada daquele tipo)
+create table public.category_images (
+  type public.item_type primary key,
+  storage_path text not null,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.category_images enable row level security;
+
+create policy "Fotos de categoria são públicas"
+  on public.category_images for select
+  using (true);
+
+create policy "Admin gerencia fotos de categoria"
+  on public.category_images for all
+  using (public.is_admin())
+  with check (public.is_admin());
+
+-- Configurações gerais do site (ex.: imagem de fundo do hero)
+create table public.site_settings (
+  id text primary key,
+  hero_image_path text,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.site_settings enable row level security;
+
+create policy "Configurações do site são públicas"
+  on public.site_settings for select
+  using (true);
+
+create policy "Admin gerencia configurações do site"
+  on public.site_settings for all
+  using (public.is_admin())
+  with check (public.is_admin());
+
+insert into public.site_settings (id) values ('default')
+on conflict (id) do nothing;
+
 -- ==========================================================================
 -- Funções de negócio (security definer): garantem atomicidade e evitam que
 -- duas pessoas comprem/negociem a mesma peça ao mesmo tempo.
