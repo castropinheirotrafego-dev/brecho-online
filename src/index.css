@@ -4,25 +4,30 @@
   --font-sans: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
   --font-serif: 'Playfair Display', Georgia, serif;
 
-  --color-cream-50: #fdf8f6;
-  --color-cream-100: #f8ece7;
-  --color-cream-200: #f0dcd3;
-  --color-cream-300: #e3c0b3;
+  --color-cream-50: #fffdfb;
+  --color-cream-100: #f7f2ec;
+  --color-cream-200: #eaddd5;
+  --color-cream-300: #ddcab9;
 
-  --color-forest-50: #fbeef0;
-  --color-forest-100: #f5d9dc;
-  --color-forest-400: #a67b74;
-  --color-forest-500: #c17b83;
-  --color-forest-600: #b5525f;
-  --color-forest-700: #9c3f4b;
-  --color-forest-900: #2f3a28;
+  --color-forest-50: #fbf3ef;
+  --color-forest-100: #f3e2db;
+  --color-forest-400: #8a7368;
+  --color-forest-500: #6b5449;
+  --color-forest-600: #b8664f;
+  --color-forest-700: #9c5240;
+  --color-forest-900: #382a25;
+
+  --color-rosequeimado: #d99a9a;
+  --color-oliva: #59604a;
+  --color-oliva-dark: #454b39;
+  --color-dourado: #b28a52;
 }
 
 body {
   margin: 0;
   font-family: var(--font-sans);
-  color: #2f3a28;
-  background: #f8ece7;
+  color: #382a25;
+  background: #f7f2ec;
 }
 
 h1,

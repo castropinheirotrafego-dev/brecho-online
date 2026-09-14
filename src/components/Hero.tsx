@@ -1,9 +1,10 @@
-import { Leaf, MapPin, Users } from 'lucide-react'
+import { Heart, Leaf, MapPin, Users } from 'lucide-react'
 import DressIcon from './DressIcon'
 
 const features = [
-  { icon: Leaf, label: 'Consumo mais consciente' },
+  { icon: Heart, label: 'Peças selecionadas' },
   { icon: MapPin, label: 'Retirada na nossa cidade' },
+  { icon: Leaf, label: 'Consumo mais consciente' },
   { icon: Users, label: 'Atendimento personalizado' },
 ]
 
@@ -31,19 +32,22 @@ export default function Hero() {
 
         <div className="relative hidden min-h-[320px] items-center justify-center bg-cream-300 md:flex">
           <DressIcon size={140} className="text-forest-900/15" />
-          <span className="absolute right-8 top-8 flex h-20 w-20 flex-col items-center justify-center rounded-full bg-forest-800 text-center text-[10px] font-semibold uppercase leading-tight text-cream-50">
+          <span className="absolute right-8 top-8 flex h-20 w-20 flex-col items-center justify-center rounded-full bg-oliva text-center text-[10px] font-semibold uppercase leading-tight text-cream-50">
             <Leaf size={16} className="mb-1" />
             Peças
             <br />
             Únicas
           </span>
+          <span className="absolute bottom-6 left-6 -rotate-3 font-serif text-sm italic text-forest-900/50">
+            Mais moda, menos desperdício
+          </span>
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-1 divide-y divide-cream-300 rounded-2xl border border-cream-300 bg-white text-sm sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+      <div className="mt-6 grid grid-cols-2 gap-x-2 gap-y-4 rounded-2xl border border-cream-300 bg-white px-4 py-5 text-sm sm:grid-cols-4 sm:gap-4">
         {features.map(({ icon: Icon, label }) => (
-          <div key={label} className="flex items-center justify-center gap-2 px-4 py-4 text-center text-forest-700">
-            <Icon size={18} className="flex-shrink-0 text-forest-600" />
+          <div key={label} className="flex flex-col items-center gap-1.5 text-center text-forest-700">
+            <Icon size={18} className="flex-shrink-0 text-rosequeimado" />
             <span>{label}</span>
           </div>
         ))}
