@@ -1,10 +1,8 @@
-import { Leaf, Heart, Truck, Recycle } from 'lucide-react'
+import { Leaf, Recycle } from 'lucide-react'
 import DressIcon from './DressIcon'
 
 const features = [
   { icon: Leaf, label: 'Moda mais consciente' },
-  { icon: Heart, label: 'Peças selecionadas' },
-  { icon: Truck, label: 'Envio para todo o Brasil' },
   { icon: Recycle, label: 'Roupas que circulam mais' },
 ]
 
@@ -19,9 +17,7 @@ export default function Hero() {
           <h1 className="mt-4 font-serif text-4xl font-medium leading-tight md:text-5xl">
             Seu próximo look já teve uma <em className="italic text-forest-600">história.</em>
           </h1>
-          <p className="mt-4 max-w-sm text-cream-100/80">
-            Peças selecionadas, usadas e prontas para viver uma nova.
-          </p>
+          <p className="mt-4 max-w-sm text-cream-100/80">Peças usadas e prontas para viver uma nova.</p>
           <a
             href="#catalogo"
             className="mt-6 inline-flex items-center gap-2 rounded-full bg-forest-600 px-6 py-3 font-medium text-cream-50 hover:bg-forest-700"
@@ -30,7 +26,7 @@ export default function Hero() {
           </a>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 text-sm text-cream-100/90 sm:grid-cols-4">
+        <div className="flex gap-8 text-sm text-cream-100/90">
           {features.map(({ icon: Icon, label }) => (
             <div key={label} className="flex flex-col items-start gap-2">
               <Icon size={20} className="text-forest-600" />
