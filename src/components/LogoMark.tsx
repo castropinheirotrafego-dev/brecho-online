@@ -1,12 +1,6 @@
-export default function LogoMark({ size = 40, className = '' }: { size?: number; className?: string }) {
+export default function LogoMark({ className = '' }: { className?: string }) {
   return (
-    <svg
-      width={size}
-      height={(size * 92) / 100}
-      viewBox="0 0 100 92"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-    >
+    <svg viewBox="0 0 100 92" xmlns="http://www.w3.org/2000/svg" className={className}>
       <text x="6" y="66" fontFamily="'Playfair Display', Georgia, serif" fontWeight="700" fontSize="62" fill="#382a25">
         P
       </text>

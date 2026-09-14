@@ -31,7 +31,7 @@ export default function Layout() {
   return (
     <div className="flex min-h-screen flex-col bg-cream-100">
       <header className="sticky top-0 z-30 border-b border-cream-300 bg-cream-50">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:py-5">
           <Link to="/">
             <Logo />
           </Link>
