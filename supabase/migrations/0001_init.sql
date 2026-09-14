@@ -293,7 +293,7 @@ create table public.site_settings (
   hero_title text,
   hero_subtitle text,
   hero_button_text text,
-  hero_badges jsonb not null default '["Peças únicas", "Comunidade feminina", "Moda mais consciente"]'::jsonb,
+  hero_badges jsonb not null default '[{"label":"Peças únicas","image_path":null},{"label":"Comunidade feminina","image_path":null},{"label":"Moda mais consciente","image_path":null}]'::jsonb,
   updated_at timestamptz not null default now()
 );
 

@@ -31,12 +31,12 @@ export default function Layout() {
   return (
     <div className="flex min-h-screen flex-col bg-cream-100">
       <header className="sticky top-0 z-30 border-b border-cream-300 bg-cream-50">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-3 py-3 sm:gap-4 sm:px-4 sm:py-4">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-1.5 px-2.5 py-3 sm:gap-4 sm:px-4 sm:py-4">
           <Link to="/" className="min-w-0">
             <Logo />
           </Link>
 
-          <nav className="flex flex-shrink-0 items-center gap-2 sm:gap-3">
+          <nav className="flex flex-shrink-0 items-center gap-1.5 sm:gap-3">
             {user ? (
               <>
                 {profile?.is_admin && (
@@ -100,7 +100,7 @@ export default function Layout() {
                 </Link>
                 <Link
                   to="/cadastro"
-                  className="whitespace-nowrap rounded-full bg-forest-600 px-3 py-1.5 text-sm font-medium text-cream-50 hover:bg-forest-700 sm:px-4 sm:py-2"
+                  className="whitespace-nowrap rounded-full bg-forest-600 px-2.5 py-1.5 text-sm font-medium text-cream-50 hover:bg-forest-700 sm:px-4 sm:py-2"
                 >
                   Criar conta
                 </Link>

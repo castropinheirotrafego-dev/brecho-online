@@ -1,11 +1,16 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import DressIcon from './DressIcon'
+import type { HeroBadge } from '../lib/database.types'
 
 const defaultTitle = 'Uma peça.\nDuas histórias.'
 const defaultSubtitle = 'Roupas, sapatos e bolsas que ganham novos começos.'
 const defaultButtonText = 'Ver peças'
-const defaultBadges = ['Peças únicas', 'Comunidade feminina', 'Moda mais consciente']
+const defaultBadges: HeroBadge[] = [
+  { label: 'Peças únicas', image_path: null },
+  { label: 'Comunidade feminina', image_path: null },
+  { label: 'Moda mais consciente', image_path: null },
+]
 
 function badgeEmoji(label: string) {
   const value = label.toLowerCase()
@@ -15,12 +20,20 @@ function badgeEmoji(label: string) {
   return '♡'
 }
 
+// Aceita o formato antigo (array de strings) para não quebrar dados já salvos
+function normalizeBadges(raw: unknown): HeroBadge[] {
+  if (!Array.isArray(raw)) return []
+  return raw.map((item) =>
+    typeof item === 'string' ? { label: item, image_path: null } : (item as HeroBadge),
+  )
+}
+
 export default function Hero() {
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [title, setTitle] = useState(defaultTitle)
   const [subtitle, setSubtitle] = useState(defaultSubtitle)
   const [buttonText, setButtonText] = useState(defaultButtonText)
-  const [badges, setBadges] = useState<string[]>(defaultBadges)
+  const [badges, setBadges] = useState<HeroBadge[]>(defaultBadges)
 
   useEffect(() => {
     supabase
@@ -36,7 +49,8 @@ export default function Hero() {
         if (data.hero_title) setTitle(data.hero_title)
         if (data.hero_subtitle) setSubtitle(data.hero_subtitle)
         if (data.hero_button_text) setButtonText(data.hero_button_text)
-        if (data.hero_badges && data.hero_badges.length > 0) setBadges(data.hero_badges)
+        const normalized = normalizeBadges(data.hero_badges)
+        if (normalized.length > 0) setBadges(normalized)
       })
   }, [])
 
@@ -81,18 +95,29 @@ export default function Hero() {
         </a>
 
         {badges.length > 0 && (
-          <div className="flex flex-col gap-3">
-            {badges.map((badge) => (
-              <span
-                key={badge}
-                className="flex h-16 w-16 flex-shrink-0 flex-col items-center justify-center gap-0.5 rounded-full bg-oliva p-1.5 text-center text-[9px] font-bold uppercase leading-tight tracking-wide text-cream-50 shadow-sm"
-              >
-                <span aria-hidden className="text-sm leading-none">
-                  {badgeEmoji(badge)}
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            {badges.map((badge, i) => {
+              const badgeImageUrl = badge.image_path
+                ? supabase.storage.from('item-photos').getPublicUrl(badge.image_path).data.publicUrl
+                : null
+              return (
+                <span
+                  key={`${badge.label}-${i}`}
+                  className="flex h-16 w-16 flex-shrink-0 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-full bg-oliva p-1.5 text-center text-[9px] font-bold uppercase leading-tight tracking-wide text-cream-50 shadow-sm"
+                >
+                  {badgeImageUrl ? (
+                    <img src={badgeImageUrl} alt={badge.label} className="h-full w-full object-cover" />
+                  ) : (
+                    <>
+                      <span aria-hidden className="text-sm leading-none">
+                        {badgeEmoji(badge.label)}
+                      </span>
+                      {badge.label}
+                    </>
+                  )}
                 </span>
-                {badge}
-              </span>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>

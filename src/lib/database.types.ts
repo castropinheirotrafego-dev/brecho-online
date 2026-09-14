@@ -17,6 +17,10 @@ export type ItemStatus = 'available' | 'negotiating' | 'reserved' | 'sold'
 export type OrderStatus = 'pending_delivery' | 'completed' | 'cancelled'
 export type OfferStatus = 'pending' | 'accepted' | 'rejected' | 'cancelled'
 export type OfferRoundAuthor = 'buyer' | 'admin'
+export interface HeroBadge {
+  label: string
+  image_path: string | null
+}
 
 export interface Database {
   public: {
@@ -246,7 +250,7 @@ export interface Database {
           hero_title: string | null
           hero_subtitle: string | null
           hero_button_text: string | null
-          hero_badges: string[]
+          hero_badges: HeroBadge[]
           updated_at: string
         }
         Insert: {
@@ -255,14 +259,14 @@ export interface Database {
           hero_title?: string | null
           hero_subtitle?: string | null
           hero_button_text?: string | null
-          hero_badges?: string[]
+          hero_badges?: HeroBadge[]
         }
         Update: {
           hero_image_path?: string | null
           hero_title?: string | null
           hero_subtitle?: string | null
           hero_button_text?: string | null
-          hero_badges?: string[]
+          hero_badges?: HeroBadge[]
         }
         Relationships: []
       }

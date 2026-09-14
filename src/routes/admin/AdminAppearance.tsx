@@ -4,7 +4,12 @@ import { supabase } from '../../lib/supabase'
 import Breadcrumbs from '../../components/Breadcrumbs'
 import BackButton from '../../components/BackButton'
 import { quickCategoryFilters } from '../../lib/itemTypes'
-import type { ItemType } from '../../lib/database.types'
+import type { HeroBadge, ItemType } from '../../lib/database.types'
+
+function normalizeBadges(raw: unknown): HeroBadge[] {
+  if (!Array.isArray(raw)) return []
+  return raw.map((item) => (typeof item === 'string' ? { label: item, image_path: null } : (item as HeroBadge)))
+}
 
 export default function AdminAppearance() {
   const heroInputRef = useRef<HTMLInputElement>(null)
@@ -12,11 +17,12 @@ export default function AdminAppearance() {
   const [title, setTitle] = useState('')
   const [subtitle, setSubtitle] = useState('')
   const [buttonText, setButtonText] = useState('')
-  const [badges, setBadges] = useState<string[]>([])
+  const [badges, setBadges] = useState<HeroBadge[]>([])
   const [newBadge, setNewBadge] = useState('')
   const [categoryImages, setCategoryImages] = useState<Record<string, string>>({})
   const [uploadingHero, setUploadingHero] = useState(false)
   const [uploadingType, setUploadingType] = useState<string | null>(null)
+  const [uploadingBadge, setUploadingBadge] = useState<number | null>(null)
   const [savingText, setSavingText] = useState(false)
   const [savedText, setSavedText] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -34,7 +40,16 @@ export default function AdminAppearance() {
     setTitle(settings?.hero_title ?? 'Uma peça.\nDuas histórias.')
     setSubtitle(settings?.hero_subtitle ?? 'Roupas, sapatos e bolsas que ganham novos começos.')
     setButtonText(settings?.hero_button_text ?? 'Ver peças')
-    setBadges(settings?.hero_badges ?? ['Peças únicas', 'Comunidade feminina', 'Moda mais consciente'])
+    const normalized = normalizeBadges(settings?.hero_badges)
+    setBadges(
+      normalized.length > 0
+        ? normalized
+        : [
+            { label: 'Peças únicas', image_path: null },
+            { label: 'Comunidade feminina', image_path: null },
+            { label: 'Moda mais consciente', image_path: null },
+          ],
+    )
     const next: Record<string, string> = {}
     for (const row of images ?? []) next[row.type] = row.storage_path
     setCategoryImages(next)
@@ -87,6 +102,27 @@ export default function AdminAppearance() {
     }
   }
 
+  async function handleBadgeImageChange(index: number, file: File | undefined) {
+    if (!file) return
+    setError(null)
+    setUploadingBadge(index)
+    try {
+      const path = `site/badge-${Date.now()}-${file.name}`
+      const { error: uploadError } = await supabase.storage.from('item-photos').upload(path, file, { upsert: true })
+      if (uploadError) throw uploadError
+      const nextBadges = badges.map((b, i) => (i === index ? { ...b, image_path: path } : b))
+      setBadges(nextBadges)
+      const { error: settingsError } = await supabase
+        .from('site_settings')
+        .upsert({ id: 'default', hero_badges: nextBadges })
+      if (settingsError) throw settingsError
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao enviar imagem')
+    } finally {
+      setUploadingBadge(null)
+    }
+  }
+
   async function handleSaveText(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
@@ -112,7 +148,7 @@ export default function AdminAppearance() {
   function addBadge() {
     const value = newBadge.trim()
     if (!value) return
-    setBadges((prev) => [...prev, value])
+    setBadges((prev) => [...prev, { label: value, image_path: null }])
     setNewBadge('')
   }
 
@@ -182,19 +218,49 @@ export default function AdminAppearance() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-forest-500">Selos (ex.: Peças únicas, Comunidade feminina)</label>
-            <div className="mb-2 flex flex-wrap gap-2">
-              {badges.map((badge, i) => (
-                <span
-                  key={`${badge}-${i}`}
-                  className="flex items-center gap-1 rounded-full bg-oliva px-3 py-1 text-xs font-medium text-cream-50"
-                >
-                  {badge}
-                  <button type="button" onClick={() => removeBadge(i)} className="hover:text-red-200">
-                    <X size={12} />
-                  </button>
-                </span>
-              ))}
+            <label className="mb-1 block text-sm text-forest-500">
+              Selos (imagem circular + nome de referência)
+            </label>
+            <div className="mb-3 flex flex-wrap gap-4">
+              {badges.map((badge, i) => {
+                const badgeUrl = badge.image_path ? publicUrl(badge.image_path) : null
+                const busy = uploadingBadge === i
+                return (
+                  <div key={i} className="flex flex-col items-center gap-1.5">
+                    <label className="relative flex h-16 w-16 cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 border-cream-300 bg-white hover:border-forest-500">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => handleBadgeImageChange(i, e.target.files?.[0])}
+                      />
+                      {badgeUrl ? (
+                        <img src={badgeUrl} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        <ImageIcon size={18} className="text-forest-400" />
+                      )}
+                      <span className="absolute bottom-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-forest-600 text-cream-50">
+                        <Camera size={10} />
+                      </span>
+                    </label>
+                    <input
+                      value={badge.label}
+                      onChange={(e) =>
+                        setBadges((prev) => prev.map((b, bi) => (bi === i ? { ...b, label: e.target.value } : b)))
+                      }
+                      className="w-24 rounded-lg border border-cream-300 px-2 py-1 text-center text-xs outline-none focus:border-forest-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeBadge(i)}
+                      className="flex items-center gap-0.5 text-xs text-forest-400 hover:text-red-600"
+                    >
+                      <X size={12} /> remover
+                    </button>
+                    {busy && <p className="text-xs text-forest-500">Enviando...</p>}
+                  </div>
+                )
+              })}
             </div>
             <div className="flex gap-2">
               <input
@@ -206,7 +272,7 @@ export default function AdminAppearance() {
                     addBadge()
                   }
                 }}
-                placeholder="Novo selo"
+                placeholder="Nome do novo selo"
                 className="flex-1 rounded-lg border border-cream-300 px-4 py-2 outline-none focus:border-forest-500"
               />
               <button
