@@ -71,7 +71,7 @@ export default function Profile() {
 
       <div className="mb-8 flex flex-col items-center">
         <div className="relative">
-          <div className="h-48 w-48 overflow-hidden rounded-full border border-cream-300 bg-cream-200">
+          <div className="h-[163px] w-[163px] overflow-hidden rounded-full border border-cream-300 bg-cream-200">
             {profile?.avatar_url ? (
               <img src={profile.avatar_url} alt={profile.full_name} className="h-full w-full object-cover" />
             ) : (

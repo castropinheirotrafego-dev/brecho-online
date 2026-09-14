@@ -73,13 +73,11 @@ export default function Hero() {
         </a>
 
         {badges.length > 0 && (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-4">
             {badges.map((badge) => (
               <span
                 key={badge}
-                className={`rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-wide ${
-                  imageUrl ? 'bg-white/15 text-cream-50 backdrop-blur' : 'bg-oliva text-cream-50'
-                }`}
+                className="flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-full bg-oliva p-2 text-center text-[10px] font-semibold uppercase leading-tight tracking-wide text-cream-50 shadow-sm sm:h-28 sm:w-28 sm:text-xs"
               >
                 {badge}
               </span>
