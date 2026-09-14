@@ -1,9 +1,9 @@
-import { Leaf, Recycle } from 'lucide-react'
+import { Leaf, MapPin } from 'lucide-react'
 import DressIcon from './DressIcon'
 
 const features = [
-  { icon: Leaf, label: 'Moda mais consciente' },
-  { icon: Recycle, label: 'Roupas que circulam mais' },
+  { icon: MapPin, label: 'Retirada na nossa cidade' },
+  { icon: Leaf, label: 'Consumo consciente' },
 ]
 
 export default function Hero() {

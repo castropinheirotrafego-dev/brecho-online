@@ -177,14 +177,31 @@ export default function ItemDetail() {
             {item.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
           </p>
 
-          <div className="mt-4 flex flex-wrap gap-2 text-sm text-forest-600">
-            <span className="rounded-full bg-cream-200 px-3 py-1">{typeLabel}</span>
-            {item.size && <span className="rounded-full bg-cream-200 px-3 py-1">Tamanho {item.size}</span>}
-            <span className="rounded-full bg-cream-200 px-3 py-1">{itemConditionLabels[item.condition]}</span>
-            {!available && <span className="rounded-full bg-red-100 px-3 py-1 text-red-700">Indisponível</span>}
+          {!available && (
+            <span className="mt-3 inline-block rounded-full bg-red-100 px-3 py-1 text-sm text-red-700">
+              Indisponível
+            </span>
+          )}
+
+          <div className="mt-5 flex flex-col gap-3 text-sm">
+            {item.size && (
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-forest-500">Tamanho:</span>
+                <span className="rounded-full bg-cream-200 px-3 py-1 font-medium text-forest-700">{item.size}</span>
+              </div>
+            )}
+            <div>
+              <p className="font-medium text-forest-500">Estado da peça</p>
+              <p className="text-forest-800">{itemConditionLabels[item.condition]}</p>
+            </div>
           </div>
 
-          {item.description && <p className="mt-4 whitespace-pre-line text-forest-600">{item.description}</p>}
+          {item.description && (
+            <div className="mt-4">
+              <p className="text-sm font-medium text-forest-500">Descrição</p>
+              <p className="mt-1 whitespace-pre-line text-forest-600">{item.description}</p>
+            </div>
+          )}
 
           {!available ? (
             <p className="mt-6 text-forest-500">Esta peça não está mais disponível para compra ou oferta.</p>

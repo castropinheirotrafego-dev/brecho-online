@@ -61,6 +61,13 @@ export default function PurchaseConfirmation({ itemName }: { itemName?: string }
       </div>
 
       <p className="mt-8 font-serif text-lg italic text-forest-700">Obrigada! ♡</p>
+
+      <div className="mt-4 flex flex-col items-center leading-none">
+        <span className="font-serif text-sm font-semibold tracking-wide text-forest-900">PRÓXIMA DONA</span>
+        <span className="mt-1 text-[10px] font-medium tracking-[0.15em] text-forest-400">
+          MODA COM NOVOS COMEÇOS
+        </span>
+      </div>
     </div>
   )
 }

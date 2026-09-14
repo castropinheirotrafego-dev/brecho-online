@@ -22,6 +22,13 @@ export default function BrandBanner() {
       <p className="mt-8 font-serif text-xl italic text-forest-600">
         Uma peça. Duas histórias. <span aria-hidden>♡</span>
       </p>
+
+      <div className="mt-6 flex flex-col items-center leading-none">
+        <span className="font-serif text-sm font-semibold tracking-wide text-cream-50">PRÓXIMA DONA</span>
+        <span className="mt-1 text-[10px] font-medium tracking-[0.15em] text-cream-100/70">
+          MODA COM NOVOS COMEÇOS
+        </span>
+      </div>
     </section>
   )
 }
