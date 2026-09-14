@@ -12,6 +12,7 @@ export type ItemType =
   | 'botas'
   | 'bolsas'
 export type ItemCategory = 'adulto' | 'infantil'
+export type ItemCondition = 'novo' | 'seminovo' | 'usado'
 export type ItemStatus = 'available' | 'negotiating' | 'reserved' | 'sold'
 export type OrderStatus = 'pending_delivery' | 'completed' | 'cancelled'
 export type OfferStatus = 'pending' | 'accepted' | 'rejected' | 'cancelled'
@@ -47,6 +48,7 @@ export interface Database {
           name: string
           type: ItemType
           category: ItemCategory
+          condition: ItemCondition
           size: string | null
           price: number
           description: string | null
@@ -58,6 +60,7 @@ export interface Database {
           name: string
           type: ItemType
           category?: ItemCategory
+          condition?: ItemCondition
           size?: string | null
           price: number
           description?: string | null
@@ -67,6 +70,7 @@ export interface Database {
           name?: string
           type?: ItemType
           category?: ItemCategory
+          condition?: ItemCondition
           size?: string | null
           price?: number
           description?: string | null

@@ -4,14 +4,15 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import Breadcrumbs from '../../components/Breadcrumbs'
 import BackButton from '../../components/BackButton'
-import { itemTypeOptions, sizeOptions } from '../../lib/itemTypes'
-import type { ItemCategory, ItemStatus, ItemType } from '../../lib/database.types'
+import { itemConditionOptions, itemTypeOptions, sizeOptions } from '../../lib/itemTypes'
+import type { ItemCategory, ItemCondition, ItemStatus, ItemType } from '../../lib/database.types'
 
 interface ItemRow {
   id: string
   name: string
   type: ItemType
   category: ItemCategory
+  condition: ItemCondition
   size: string | null
   price: number
   description: string | null
@@ -37,6 +38,7 @@ const emptyForm = {
   name: '',
   type: 'blusas-camisetas' as ItemType,
   category: 'adulto' as ItemCategory,
+  condition: 'seminovo' as ItemCondition,
   size: '',
   price: '',
   description: '',
@@ -53,6 +55,7 @@ export default function AdminItems() {
   const [name, setName] = useState(emptyForm.name)
   const [type, setType] = useState<ItemType>(emptyForm.type)
   const [category, setCategory] = useState<ItemCategory>(emptyForm.category)
+  const [condition, setCondition] = useState<ItemCondition>(emptyForm.condition)
   const [size, setSize] = useState(emptyForm.size)
   const [price, setPrice] = useState(emptyForm.price)
   const [description, setDescription] = useState(emptyForm.description)
@@ -64,7 +67,9 @@ export default function AdminItems() {
     setLoading(true)
     const { data } = await supabase
       .from('items')
-      .select('id, name, type, category, size, price, description, status, item_images(storage_path, position)')
+      .select(
+        'id, name, type, category, condition, size, price, description, status, item_images(storage_path, position)',
+      )
       .order('created_at', { ascending: false })
 
     setItems(
@@ -76,6 +81,7 @@ export default function AdminItems() {
           name: row.name,
           type: row.type,
           category: row.category,
+          condition: row.condition,
           size: row.size,
           price: row.price,
           description: row.description,
@@ -100,6 +106,7 @@ export default function AdminItems() {
     setName(emptyForm.name)
     setType(emptyForm.type)
     setCategory(emptyForm.category)
+    setCondition(emptyForm.condition)
     setSize(emptyForm.size)
     setPrice(emptyForm.price)
     setDescription(emptyForm.description)
@@ -112,6 +119,7 @@ export default function AdminItems() {
     setName(item.name)
     setType(item.type)
     setCategory(item.category)
+    setCondition(item.condition)
     setSize(item.size ?? '')
     setPrice(String(item.price))
     setDescription(item.description ?? '')
@@ -134,13 +142,13 @@ export default function AdminItems() {
       if (editingId) {
         const { error: updateError } = await supabase
           .from('items')
-          .update({ name, type, category, size, price: priceNumber, description })
+          .update({ name, type, category, condition, size, price: priceNumber, description })
           .eq('id', editingId)
         if (updateError) throw updateError
       } else {
         const { data: item, error: itemError } = await supabase
           .from('items')
-          .insert({ name, type, category, size, price: priceNumber, description })
+          .insert({ name, type, category, condition, size, price: priceNumber, description })
           .select('id')
           .single()
         if (itemError || !item) throw itemError ?? new Error('Erro ao criar peça')
@@ -219,6 +227,18 @@ export default function AdminItems() {
             <option value="infantil">Kids</option>
           </select>
         </div>
+
+        <select
+          value={condition}
+          onChange={(e) => setCondition(e.target.value as ItemCondition)}
+          className="rounded-lg border border-cream-300 px-4 py-2 outline-none focus:border-forest-500"
+        >
+          {itemConditionOptions.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
 
         <select
           value={size}
@@ -318,6 +338,8 @@ export default function AdminItems() {
                   <p className="text-sm text-forest-500">
                     {item.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                     {item.size ? ` · Tam. ${item.size}` : ''}
+                    {' · '}
+                    {itemConditionOptions.find((c) => c.value === item.condition)?.label}
                   </p>
                 </div>
                 <span className={`rounded-full px-3 py-1 text-xs font-medium ${statusColors[item.status]}`}>

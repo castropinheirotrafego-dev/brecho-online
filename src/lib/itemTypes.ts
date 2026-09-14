@@ -1,4 +1,14 @@
-import type { ItemType } from './database.types'
+import type { ItemCondition, ItemType } from './database.types'
+
+export const itemConditionLabels: Record<ItemCondition, string> = {
+  novo: 'Novo',
+  seminovo: 'Ótimo estado',
+  usado: 'Usado',
+}
+
+export const itemConditionOptions: { value: ItemCondition; label: string }[] = (
+  Object.entries(itemConditionLabels) as [ItemCondition, string][]
+).map(([value, label]) => ({ value, label }))
 
 export const itemTypeLabels: Record<ItemType, string> = {
   conjuntos: 'Conjuntos',

@@ -61,12 +61,14 @@ create type public.item_type as enum (
 );
 create type public.item_category as enum ('adulto', 'infantil');
 create type public.item_status as enum ('available', 'negotiating', 'reserved', 'sold');
+create type public.item_condition as enum ('novo', 'seminovo', 'usado');
 
 create table public.items (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   type public.item_type not null,
   category public.item_category not null default 'adulto',
+  condition public.item_condition not null default 'seminovo',
   size text,
   price numeric(10, 2) not null check (price >= 0),
   description text,

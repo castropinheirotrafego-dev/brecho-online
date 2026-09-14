@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { itemTypeLabels } from '../lib/itemTypes'
-import type { ItemType } from '../lib/database.types'
+import { itemConditionLabels } from '../lib/itemTypes'
+import type { ItemCondition, ItemType } from '../lib/database.types'
 
 export interface ItemCardData {
   id: string
@@ -9,6 +9,7 @@ export interface ItemCardData {
   price: number
   size: string | null
   type: ItemType
+  condition: ItemCondition
   cover_path: string | null
 }
 
@@ -34,14 +35,14 @@ export default function ItemCard({ item }: { item: ItemCardData }) {
         )}
       </div>
       <div className="p-3">
-        <p className="truncate text-sm text-forest-700">{item.name}</p>
-        <p className="mt-1 text-lg font-bold text-forest-900">
+        <p className="truncate text-sm font-medium text-forest-900">{item.name}</p>
+        <p className="mt-0.5 text-xs text-forest-400">
+          {item.size ? `Tam. ${item.size} · ` : ''}
+          {itemConditionLabels[item.condition]}
+        </p>
+        <p className="mt-1 text-lg font-bold text-forest-700">
           {item.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
         </p>
-        <div className="mt-1 flex items-center justify-between text-xs text-forest-400">
-          <span>{itemTypeLabels[item.type] ?? item.type}</span>
-          {item.size && <span>Tam. {item.size}</span>}
-        </div>
       </div>
     </Link>
   )

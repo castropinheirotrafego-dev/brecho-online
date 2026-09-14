@@ -30,7 +30,7 @@ export default function Home() {
       const sortConfig = sortColumns[filters.sort] ?? sortColumns.recent
       let query = supabase
         .from('items')
-        .select('id, name, price, size, type, category, item_images(storage_path, position)')
+        .select('id, name, price, size, type, category, condition, item_images(storage_path, position)')
         .eq('status', 'available')
         .order(sortConfig.column, { ascending: sortConfig.ascending })
 
@@ -55,6 +55,7 @@ export default function Home() {
               price: row.price,
               size: row.size,
               type: row.type,
+              condition: row.condition,
               cover_path: sorted[0]?.storage_path ?? null,
             }
           }),

@@ -6,8 +6,8 @@ import { useCart } from '../contexts/CartContext'
 import Breadcrumbs from '../components/Breadcrumbs'
 import BackButton from '../components/BackButton'
 import PurchaseConfirmation from '../components/PurchaseConfirmation'
-import { itemTypeLabels } from '../lib/itemTypes'
-import type { ItemType } from '../lib/database.types'
+import { itemConditionLabels, itemTypeLabels } from '../lib/itemTypes'
+import type { ItemCondition, ItemType } from '../lib/database.types'
 
 interface ItemDetailData {
   id: string
@@ -16,6 +16,7 @@ interface ItemDetailData {
   price: number
   size: string | null
   type: ItemType
+  condition: ItemCondition
   status: string
   images: { storage_path: string; position: number }[]
 }
@@ -45,7 +46,7 @@ export default function ItemDetail() {
     setLoading(true)
     supabase
       .from('items')
-      .select('id, name, description, price, size, type, status, item_images(storage_path, position)')
+      .select('id, name, description, price, size, type, condition, status, item_images(storage_path, position)')
       .eq('id', id)
       .single()
       .then(({ data }) => {
@@ -179,6 +180,7 @@ export default function ItemDetail() {
           <div className="mt-4 flex flex-wrap gap-2 text-sm text-forest-600">
             <span className="rounded-full bg-cream-200 px-3 py-1">{typeLabel}</span>
             {item.size && <span className="rounded-full bg-cream-200 px-3 py-1">Tamanho {item.size}</span>}
+            <span className="rounded-full bg-cream-200 px-3 py-1">{itemConditionLabels[item.condition]}</span>
             {!available && <span className="rounded-full bg-red-100 px-3 py-1 text-red-700">Indisponível</span>}
           </div>
 
