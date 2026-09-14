@@ -95,7 +95,7 @@ export default function Hero() {
         </a>
 
         {badges.length > 0 && (
-          <div className="flex flex-wrap items-center justify-center gap-3">
+          <div className="flex flex-wrap items-center justify-center gap-5 sm:gap-8">
             {badges.map((badge, i) => {
               const badgeImageUrl = badge.image_path
                 ? supabase.storage.from('item-photos').getPublicUrl(badge.image_path).data.publicUrl
@@ -103,13 +103,13 @@ export default function Hero() {
               return (
                 <span
                   key={`${badge.label}-${i}`}
-                  className="flex h-16 w-16 flex-shrink-0 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-full bg-oliva p-1.5 text-center text-[9px] font-bold uppercase leading-tight tracking-wide text-cream-50 shadow-sm"
+                  className="flex h-[74px] w-[74px] flex-shrink-0 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-full bg-oliva p-2 text-center text-[9px] font-bold uppercase leading-tight tracking-wide text-cream-50 shadow-sm sm:h-20 sm:w-20 sm:text-[10px]"
                 >
                   {badgeImageUrl ? (
                     <img src={badgeImageUrl} alt={badge.label} className="h-full w-full object-cover" />
                   ) : (
                     <>
-                      <span aria-hidden className="text-sm leading-none">
+                      <span aria-hidden className="text-base leading-none sm:text-lg">
                         {badgeEmoji(badge.label)}
                       </span>
                       {badge.label}
