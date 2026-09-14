@@ -6,6 +6,7 @@ import ItemCard, { type ItemCardData } from '../components/ItemCard'
 import Hero from '../components/Hero'
 import CategoryQuickFilters from '../components/CategoryQuickFilters'
 import FiltersPanel, { type FilterValues } from '../components/FiltersPanel'
+import BrandBanner from '../components/BrandBanner'
 import type { ItemType } from '../lib/database.types'
 
 const sortColumns: Record<string, { column: string; ascending: boolean }> = {
@@ -22,7 +23,13 @@ export default function Home() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [type, setType] = useState<ItemType | ''>((searchParams.get('tipo') as ItemType | null) ?? '')
-  const [filters, setFilters] = useState<FilterValues>({ category: '', size: '', maxPrice: '', sort: 'recent' })
+  const [filters, setFilters] = useState<FilterValues>({
+    category: '',
+    size: '',
+    condition: '',
+    maxPrice: '',
+    sort: 'recent',
+  })
 
   useEffect(() => {
     setLoading(true)
@@ -38,6 +45,7 @@ export default function Home() {
       if (type) query = query.eq('type', type)
       if (filters.category) query = query.eq('category', filters.category)
       if (filters.size) query = query.eq('size', filters.size)
+      if (filters.condition) query = query.eq('condition', filters.condition)
       if (filters.maxPrice) {
         const value = Number(filters.maxPrice)
         if (!Number.isNaN(value)) query = query.lte('price', value)
@@ -101,6 +109,8 @@ export default function Home() {
           ))}
         </div>
       )}
+
+      <BrandBanner />
     </div>
   )
 }

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Paperclip, Pencil, X } from 'lucide-react'
+import { Camera, Pencil, X } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import Breadcrumbs from '../../components/Breadcrumbs'
@@ -198,6 +198,31 @@ export default function AdminItems() {
         onSubmit={handleSubmit}
         className="mb-10 flex max-w-xl flex-col gap-4 rounded-xl border border-cream-300 bg-white p-5"
       >
+        <div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handlePhotosChange}
+            className="hidden"
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="flex w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-cream-300 bg-cream-50 py-10 text-forest-600 hover:bg-cream-100"
+          >
+            <Camera size={28} />
+            <span className="text-sm font-medium">
+              {photos.length > 0 ? `${photos.length} foto(s) selecionada(s)` : 'Adicionar fotos'}
+            </span>
+            <span className="text-xs text-forest-400">Até 6 fotos</span>
+          </button>
+          {editingId && (
+            <p className="mt-1 text-xs text-forest-400">Fotos novas serão adicionadas às já existentes.</p>
+          )}
+        </div>
+
         <input
           required
           placeholder="Nome (ex: Jaqueta Jeans)"
@@ -268,31 +293,6 @@ export default function AdminItems() {
           onChange={(e) => setDescription(e.target.value)}
           className="rounded-lg border border-cream-300 px-4 py-2 outline-none focus:border-forest-500"
         />
-
-        <div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handlePhotosChange}
-            className="hidden"
-          />
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="flex items-center gap-2 rounded-lg border border-dashed border-cream-300 px-4 py-2 text-sm font-medium text-forest-700 hover:bg-cream-100"
-          >
-            <Paperclip size={16} />
-            Anexar fotos
-          </button>
-          {photos.length > 0 && (
-            <p className="mt-1 text-xs text-forest-400">{photos.length} foto(s) selecionada(s)</p>
-          )}
-          {editingId && (
-            <p className="mt-1 text-xs text-forest-400">Fotos novas serão adicionadas às já existentes.</p>
-          )}
-        </div>
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 

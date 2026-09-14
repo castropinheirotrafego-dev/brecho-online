@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Trash2 } from 'lucide-react'
+import { MapPin, Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { useCart } from '../contexts/CartContext'
@@ -59,6 +59,13 @@ export default function Cart() {
     refreshCart()
   }
 
+  async function clearCart() {
+    if (!user) return
+    await supabase.from('cart_items').delete().eq('user_id', user.id)
+    setRows([])
+    refreshCart()
+  }
+
   async function handleCheckout() {
     setCheckingOut(true)
     setError(null)
@@ -86,10 +93,19 @@ export default function Cart() {
       <BackButton />
       <Breadcrumbs items={[{ label: 'Início', to: '/' }, { label: 'Carrinho' }]} />
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold text-forest-900">Carrinho</h1>
-        <Link to="/" className="text-sm font-medium text-forest-600 hover:text-forest-800">
-          Continuar comprando
-        </Link>
+        <h1 className="text-2xl font-bold text-forest-900">
+          Meu Carrinho{rows.length > 0 ? ` (${rows.length})` : ''}
+        </h1>
+        <div className="flex items-center gap-4">
+          {rows.length > 0 && (
+            <button onClick={clearCart} className="text-sm font-medium text-forest-500 hover:text-red-600">
+              Limpar
+            </button>
+          )}
+          <Link to="/" className="text-sm font-medium text-forest-600 hover:text-forest-800">
+            Continuar comprando
+          </Link>
+        </div>
       </div>
       {loading ? (
         <p className="text-forest-400">Carregando...</p>
@@ -126,22 +142,30 @@ export default function Cart() {
             )
           })}
 
-          <div className="mt-4 flex items-center justify-between rounded-xl bg-cream-200 p-4">
+          <div className="mt-2 flex gap-3 rounded-xl bg-cream-200 p-4 text-sm text-forest-700">
+            <MapPin size={20} className="mt-0.5 flex-shrink-0 text-forest-600" />
+            <div>
+              <p className="font-medium">Retirada na nossa cidade</p>
+              <p className="text-forest-500">
+                Não trabalhamos com entrega. Após a confirmação da compra, entramos em contato pelo WhatsApp para
+                combinar a retirada da sua peça.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between rounded-xl border border-cream-300 bg-white p-4">
             <span className="font-semibold text-forest-900">
-              Total: {total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+              Subtotal: {total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
             </span>
             <button
               onClick={handleCheckout}
               disabled={checkingOut}
               className="rounded-full bg-forest-600 px-5 py-2.5 font-medium text-cream-50 hover:bg-forest-700 disabled:opacity-50"
             >
-              {checkingOut ? 'Finalizando...' : 'Concluir compra'}
+              {checkingOut ? 'Finalizando...' : 'Finalizar compra'}
             </button>
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
-          <p className="mt-2 text-xs text-forest-400">
-            Pagamento apenas pessoalmente, no ato da entrega.
-          </p>
         </div>
       )}
     </div>

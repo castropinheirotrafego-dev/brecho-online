@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { useCart } from '../contexts/CartContext'
 import { supabase } from '../lib/supabase'
 import BackToTopButton from './BackToTopButton'
-import DressIcon from './DressIcon'
+import Logo from './Logo'
 
 export default function Layout() {
   const { user, profile } = useAuth()
@@ -25,9 +25,8 @@ export default function Layout() {
     <div className="flex min-h-screen flex-col bg-cream-100">
       <header className="sticky top-0 z-30 border-b border-cream-300 bg-cream-50">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-          <Link to="/" className="flex items-center gap-2 font-serif text-xl font-semibold text-forest-900">
-            <DressIcon size={24} className="text-forest-700" />
-            Próxima Dona
+          <Link to="/">
+            <Logo />
           </Link>
 
           <nav className="flex items-center gap-3">

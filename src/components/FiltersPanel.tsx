@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { SlidersHorizontal } from 'lucide-react'
-import type { ItemCategory } from '../lib/database.types'
-import { priceRangeOptions, sizeOptions } from '../lib/itemTypes'
+import type { ItemCategory, ItemCondition } from '../lib/database.types'
+import { itemConditionOptions, priceRangeOptions, sizeOptions } from '../lib/itemTypes'
 
 export interface FilterValues {
   category: ItemCategory | ''
   size: string
+  condition: ItemCondition | ''
   maxPrice: string
   sort: string
 }
@@ -36,9 +37,17 @@ export default function FiltersPanel({
     return () => document.removeEventListener('mousedown', onClickOutside)
   }, [])
 
-  const activeCount = [values.category, values.size, values.maxPrice, values.sort !== 'recent' ? values.sort : ''].filter(
-    Boolean,
-  ).length
+  const activeCount = [
+    values.category,
+    values.size,
+    values.condition,
+    values.maxPrice,
+    values.sort !== 'recent' ? values.sort : '',
+  ].filter(Boolean).length
+
+  function clearAll() {
+    onChange({ category: '', size: '', condition: '', maxPrice: '', sort: 'recent' })
+  }
 
   return (
     <div ref={ref} className="relative">
@@ -56,7 +65,16 @@ export default function FiltersPanel({
       </button>
 
       {open && (
-        <div className="absolute right-0 z-20 mt-2 w-72 rounded-2xl border border-cream-300 bg-white p-4 shadow-lg">
+        <div className="absolute right-0 z-20 mt-2 w-80 rounded-2xl border border-cream-300 bg-white p-4 shadow-lg">
+          <div className="mb-3 flex items-center justify-between">
+            <span className="text-sm font-semibold text-forest-900">Filtros</span>
+            {activeCount > 0 && (
+              <button onClick={clearAll} className="text-xs font-medium text-forest-500 hover:text-red-600">
+                Limpar tudo
+              </button>
+            )}
+          </div>
+
           <div className="mb-3">
             <label className="mb-1 block text-xs font-medium text-forest-500">Categoria</label>
             <select
@@ -72,18 +90,25 @@ export default function FiltersPanel({
 
           <div className="mb-3">
             <label className="mb-1 block text-xs font-medium text-forest-500">Tamanho</label>
-            <select
-              value={values.size}
-              onChange={(e) => onChange({ ...values, size: e.target.value })}
-              className="w-full rounded-lg border border-cream-300 px-3 py-2 outline-none focus:border-forest-500"
-            >
-              <option value="">Todos os tamanhos</option>
-              {sizeOptions.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
+            <div className="flex flex-wrap gap-1.5">
+              {sizeOptions.map((s) => {
+                const active = values.size === s
+                return (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => onChange({ ...values, size: active ? '' : s })}
+                    className={`rounded-full border px-3 py-1 text-xs font-medium ${
+                      active
+                        ? 'border-forest-600 bg-forest-600 text-cream-50'
+                        : 'border-cream-300 text-forest-600 hover:bg-cream-100'
+                    }`}
+                  >
+                    {s}
+                  </button>
+                )
+              })}
+            </div>
           </div>
 
           <div className="mb-3">
@@ -101,6 +126,29 @@ export default function FiltersPanel({
             </select>
           </div>
 
+          <div className="mb-3">
+            <label className="mb-1 block text-xs font-medium text-forest-500">Estado da peça</label>
+            <div className="flex flex-wrap gap-1.5">
+              {itemConditionOptions.map((opt) => {
+                const active = values.condition === opt.value
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => onChange({ ...values, condition: active ? '' : opt.value })}
+                    className={`rounded-full border px-3 py-1 text-xs font-medium ${
+                      active
+                        ? 'border-forest-600 bg-forest-600 text-cream-50'
+                        : 'border-cream-300 text-forest-600 hover:bg-cream-100'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
           <div>
             <label className="mb-1 block text-xs font-medium text-forest-500">Ordenar por</label>
             <select
@@ -115,15 +163,6 @@ export default function FiltersPanel({
               ))}
             </select>
           </div>
-
-          {activeCount > 0 && (
-            <button
-              onClick={() => onChange({ category: '', size: '', maxPrice: '', sort: 'recent' })}
-              className="mt-3 w-full rounded-full border border-cream-300 py-1.5 text-sm text-forest-600 hover:bg-cream-100"
-            >
-              Limpar filtros
-            </button>
-          )}
         </div>
       )}
     </div>
