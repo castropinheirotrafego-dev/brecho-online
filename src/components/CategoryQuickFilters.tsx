@@ -61,7 +61,7 @@ export default function CategoryQuickFilters({
                 </span>
               )}
             </span>
-            <span className={`text-xs ${active ? 'font-semibold text-forest-900' : 'text-forest-500'}`}>
+            <span className={`text-xs uppercase ${active ? 'font-semibold text-forest-900' : 'text-forest-500'}`}>
               {opt.label}
             </span>
           </button>
