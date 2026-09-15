@@ -103,7 +103,9 @@ export default function Hero() {
               return (
                 <span
                   key={`${badge.label}-${i}`}
-                  className="flex h-[74px] w-[74px] flex-shrink-0 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-full bg-oliva p-2 text-center text-[9px] font-bold uppercase leading-tight tracking-wide text-cream-50 shadow-sm sm:h-20 sm:w-20 sm:text-[10px]"
+                  className={`flex h-[74px] w-[74px] flex-shrink-0 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-full text-center text-[9px] font-bold uppercase leading-tight tracking-wide shadow-sm sm:h-20 sm:w-20 sm:text-[10px] ${
+                    badgeImageUrl ? '' : 'bg-oliva p-2 text-cream-50'
+                  }`}
                 >
                   {badgeImageUrl ? (
                     <img src={badgeImageUrl} alt={badge.label} className="h-full w-full object-cover" />
