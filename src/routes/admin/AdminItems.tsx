@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Camera, Pencil, X } from 'lucide-react'
+import { Camera, Pencil, Trash2, X } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import Breadcrumbs from '../../components/Breadcrumbs'
@@ -63,8 +63,11 @@ export default function AdminItems() {
   const [originalPrice, setOriginalPrice] = useState(emptyForm.originalPrice)
   const [description, setDescription] = useState(emptyForm.description)
   const [photos, setPhotos] = useState<File[]>([])
+  const [existingPhotos, setExistingPhotos] = useState<{ id: string; storage_path: string }[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null)
+  const [listError, setListError] = useState<string | null>(null)
 
   async function loadItems() {
     setLoading(true)
@@ -116,10 +119,11 @@ export default function AdminItems() {
     setOriginalPrice(emptyForm.originalPrice)
     setDescription(emptyForm.description)
     setPhotos([])
+    setExistingPhotos([])
     setError(null)
   }
 
-  function startEdit(item: ItemRow) {
+  async function startEdit(item: ItemRow) {
     setEditingId(item.id)
     setName(item.name)
     setType(item.type)
@@ -130,8 +134,55 @@ export default function AdminItems() {
     setOriginalPrice(item.original_price != null ? String(item.original_price) : '')
     setDescription(item.description ?? '')
     setPhotos([])
+    setExistingPhotos([])
     setError(null)
     formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+
+    const { data } = await supabase
+      .from('item_images')
+      .select('id, storage_path, position')
+      .eq('item_id', item.id)
+      .order('position', { ascending: true })
+    setExistingPhotos((data ?? []).map((row) => ({ id: row.id, storage_path: row.storage_path })))
+  }
+
+  async function deletePhoto(photoId: string, storagePath: string) {
+    if (!confirm('Excluir esta foto?')) return
+    await supabase.from('item_images').delete().eq('id', photoId)
+    await supabase.storage.from('item-photos').remove([storagePath])
+    setExistingPhotos((prev) => prev.filter((p) => p.id !== photoId))
+    await loadItems()
+  }
+
+  async function deleteItem(item: ItemRow) {
+    if (!confirm(`Excluir "${item.name}" permanentemente? Essa ação não pode ser desfeita.`)) return
+    setDeletingItemId(item.id)
+    setListError(null)
+    try {
+      const { data: images } = await supabase
+        .from('item_images')
+        .select('storage_path')
+        .eq('item_id', item.id)
+
+      const { error: deleteError } = await supabase.from('items').delete().eq('id', item.id)
+      if (deleteError) throw deleteError
+
+      const paths = (images ?? []).map((img) => img.storage_path)
+      if (paths.length > 0) {
+        await supabase.storage.from('item-photos').remove(paths)
+      }
+
+      if (editingId === item.id) resetForm()
+      await loadItems()
+    } catch (err) {
+      setListError(
+        err instanceof Error
+          ? `Não foi possível excluir: ${err.message}`
+          : 'Não foi possível excluir esta peça.',
+      )
+    } finally {
+      setDeletingItemId(null)
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -251,7 +302,29 @@ export default function AdminItems() {
             <span className="text-xs text-forest-400">Até 6 fotos</span>
           </button>
           {editingId && (
-            <p className="mt-1 text-xs text-forest-400">Fotos novas serão adicionadas às já existentes.</p>
+            <>
+              <p className="mt-1 text-xs text-forest-400">Fotos novas serão adicionadas às já existentes.</p>
+              {existingPhotos.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {existingPhotos.map((photo) => {
+                    const url = supabase.storage.from('item-photos').getPublicUrl(photo.storage_path).data.publicUrl
+                    return (
+                      <div key={photo.id} className="relative h-16 w-16 overflow-hidden rounded-lg bg-cream-100">
+                        <img src={url} alt="" className="h-full w-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => deletePhoto(photo.id, photo.storage_path)}
+                          title="Excluir foto"
+                          className="absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-white/90 text-red-600 hover:bg-white"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </>
           )}
         </div>
 
@@ -357,6 +430,7 @@ export default function AdminItems() {
       </form>
 
       <h2 className="mb-4 text-xl font-semibold text-forest-900">Minhas peças</h2>
+      {listError && <p className="mb-4 text-sm text-red-600">{listError}</p>}
       {loading ? (
         <p className="text-forest-400">Carregando...</p>
       ) : (
@@ -400,6 +474,14 @@ export default function AdminItems() {
                     Reativar no catálogo
                   </button>
                 )}
+                <button
+                  onClick={() => deleteItem(item)}
+                  disabled={deletingItemId === item.id}
+                  className="flex items-center gap-1 rounded-full border border-red-200 px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
+                >
+                  <Trash2 size={14} />
+                  {deletingItemId === item.id ? 'Excluindo...' : 'Excluir'}
+                </button>
               </div>
             )
           })}
