@@ -30,6 +30,7 @@ function normalizeBadges(raw: unknown): HeroBadge[] {
 
 export default function Hero() {
   const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const [mobileImageUrl, setMobileImageUrl] = useState<string | null>(null)
   const [title, setTitle] = useState(defaultTitle)
   const [subtitle, setSubtitle] = useState(defaultSubtitle)
   const [buttonText, setButtonText] = useState(defaultButtonText)
@@ -38,13 +39,18 @@ export default function Hero() {
   useEffect(() => {
     supabase
       .from('site_settings')
-      .select('hero_image_path, hero_title, hero_subtitle, hero_button_text, hero_badges')
+      .select('hero_image_path, hero_image_path_mobile, hero_title, hero_subtitle, hero_button_text, hero_badges')
       .eq('id', 'default')
       .maybeSingle()
       .then(({ data }) => {
         if (!data) return
         if (data.hero_image_path) {
           setImageUrl(supabase.storage.from('item-photos').getPublicUrl(data.hero_image_path).data.publicUrl)
+        }
+        if (data.hero_image_path_mobile) {
+          setMobileImageUrl(
+            supabase.storage.from('item-photos').getPublicUrl(data.hero_image_path_mobile).data.publicUrl,
+          )
         }
         if (data.hero_title) setTitle(data.hero_title)
         if (data.hero_subtitle) setSubtitle(data.hero_subtitle)
@@ -55,12 +61,47 @@ export default function Hero() {
   }, [])
 
   const titleLines = title.split('\n')
+  const hasImage = Boolean(imageUrl || mobileImageUrl)
+
+  function renderBadge(badge: HeroBadge, i: number) {
+    const badgeImageUrl = badge.image_path
+      ? supabase.storage.from('item-photos').getPublicUrl(badge.image_path).data.publicUrl
+      : null
+    return (
+      <span
+        key={`${badge.label}-${i}`}
+        className={`flex h-[74px] w-[74px] flex-shrink-0 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-full text-center text-[9px] font-bold uppercase leading-tight tracking-wide shadow-sm sm:h-20 sm:w-20 sm:text-[10px] ${
+          badgeImageUrl ? '' : 'bg-oliva p-2 text-cream-50'
+        }`}
+      >
+        {badgeImageUrl ? (
+          <img src={badgeImageUrl} alt={badge.label} className="h-full w-full object-cover" />
+        ) : (
+          <>
+            <span aria-hidden className="text-base leading-none sm:text-lg">
+              {badgeEmoji(badge.label)}
+            </span>
+            {badge.label}
+          </>
+        )}
+      </span>
+    )
+  }
 
   return (
     <section className="relative mb-8 flex min-h-[420px] w-full flex-col justify-end overflow-hidden rounded-3xl bg-cream-200">
-      {imageUrl ? (
+      {hasImage ? (
         <>
-          <img src={imageUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
+          <img
+            src={mobileImageUrl ?? imageUrl ?? undefined}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover md:hidden"
+          />
+          <img
+            src={imageUrl ?? mobileImageUrl ?? undefined}
+            alt=""
+            className="absolute inset-0 hidden h-full w-full object-cover md:block"
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-forest-900/80 via-forest-900/20 to-transparent" />
         </>
       ) : (
@@ -69,16 +110,22 @@ export default function Hero() {
         </div>
       )}
 
-      <div className="relative z-10 flex flex-col gap-5 p-8 md:p-12">
+      {badges.length > 0 && (
+        <div className="absolute right-6 top-1/2 z-10 hidden -translate-y-1/2 flex-col gap-4 md:flex lg:right-10">
+          {badges.map((badge, i) => renderBadge(badge, i))}
+        </div>
+      )}
+
+      <div className="relative z-10 flex flex-col gap-5 p-8 md:max-w-md md:p-12">
         <h1
           className={`font-serif text-4xl font-medium leading-tight md:text-5xl ${
-            imageUrl ? 'text-cream-50' : 'text-forest-900'
+            hasImage ? 'text-cream-50' : 'text-forest-900'
           }`}
         >
           {titleLines.map((line, i) => (
             <span key={i}>
               {i === titleLines.length - 1 ? (
-                <em className={`italic ${imageUrl ? 'text-rosequeimado' : 'text-forest-600'}`}>{line}</em>
+                <em className={`italic ${hasImage ? 'text-rosequeimado' : 'text-forest-600'}`}>{line}</em>
               ) : (
                 line
               )}
@@ -86,7 +133,7 @@ export default function Hero() {
             </span>
           ))}
         </h1>
-        <p className={`max-w-sm ${imageUrl ? 'text-cream-100' : 'text-forest-600'}`}>{subtitle}</p>
+        <p className={`max-w-sm ${hasImage ? 'text-cream-100' : 'text-forest-600'}`}>{subtitle}</p>
         <a
           href="#catalogo"
           className="inline-flex w-fit items-center gap-2 rounded-full bg-forest-600 px-6 py-3 font-medium text-cream-50 hover:bg-forest-700"
@@ -95,31 +142,8 @@ export default function Hero() {
         </a>
 
         {badges.length > 0 && (
-          <div className="flex flex-wrap items-center justify-center gap-5 sm:gap-8">
-            {badges.map((badge, i) => {
-              const badgeImageUrl = badge.image_path
-                ? supabase.storage.from('item-photos').getPublicUrl(badge.image_path).data.publicUrl
-                : null
-              return (
-                <span
-                  key={`${badge.label}-${i}`}
-                  className={`flex h-[74px] w-[74px] flex-shrink-0 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-full text-center text-[9px] font-bold uppercase leading-tight tracking-wide shadow-sm sm:h-20 sm:w-20 sm:text-[10px] ${
-                    badgeImageUrl ? '' : 'bg-oliva p-2 text-cream-50'
-                  }`}
-                >
-                  {badgeImageUrl ? (
-                    <img src={badgeImageUrl} alt={badge.label} className="h-full w-full object-cover" />
-                  ) : (
-                    <>
-                      <span aria-hidden className="text-base leading-none sm:text-lg">
-                        {badgeEmoji(badge.label)}
-                      </span>
-                      {badge.label}
-                    </>
-                  )}
-                </span>
-              )
-            })}
+          <div className="flex flex-wrap items-center justify-center gap-5 md:hidden">
+            {badges.map((badge, i) => renderBadge(badge, i))}
           </div>
         )}
       </div>

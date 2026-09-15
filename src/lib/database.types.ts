@@ -247,6 +247,7 @@ export interface Database {
         Row: {
           id: string
           hero_image_path: string | null
+          hero_image_path_mobile: string | null
           hero_title: string | null
           hero_subtitle: string | null
           hero_button_text: string | null
@@ -256,6 +257,7 @@ export interface Database {
         Insert: {
           id: string
           hero_image_path?: string | null
+          hero_image_path_mobile?: string | null
           hero_title?: string | null
           hero_subtitle?: string | null
           hero_button_text?: string | null
@@ -263,6 +265,7 @@ export interface Database {
         }
         Update: {
           hero_image_path?: string | null
+          hero_image_path_mobile?: string | null
           hero_title?: string | null
           hero_subtitle?: string | null
           hero_button_text?: string | null

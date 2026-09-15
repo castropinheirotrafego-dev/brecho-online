@@ -13,7 +13,9 @@ function normalizeBadges(raw: unknown): HeroBadge[] {
 
 export default function AdminAppearance() {
   const heroInputRef = useRef<HTMLInputElement>(null)
+  const heroMobileInputRef = useRef<HTMLInputElement>(null)
   const [heroPath, setHeroPath] = useState<string | null>(null)
+  const [heroPathMobile, setHeroPathMobile] = useState<string | null>(null)
   const [title, setTitle] = useState('')
   const [subtitle, setSubtitle] = useState('')
   const [buttonText, setButtonText] = useState('')
@@ -21,6 +23,7 @@ export default function AdminAppearance() {
   const [newBadge, setNewBadge] = useState('')
   const [categoryImages, setCategoryImages] = useState<Record<string, string>>({})
   const [uploadingHero, setUploadingHero] = useState(false)
+  const [uploadingHeroMobile, setUploadingHeroMobile] = useState(false)
   const [uploadingType, setUploadingType] = useState<string | null>(null)
   const [uploadingBadge, setUploadingBadge] = useState<number | null>(null)
   const [savingText, setSavingText] = useState(false)
@@ -31,12 +34,13 @@ export default function AdminAppearance() {
     const [{ data: settings }, { data: images }] = await Promise.all([
       supabase
         .from('site_settings')
-        .select('hero_image_path, hero_title, hero_subtitle, hero_button_text, hero_badges')
+        .select('hero_image_path, hero_image_path_mobile, hero_title, hero_subtitle, hero_button_text, hero_badges')
         .eq('id', 'default')
         .maybeSingle(),
       supabase.from('category_images').select('type, storage_path'),
     ])
     setHeroPath(settings?.hero_image_path ?? null)
+    setHeroPathMobile(settings?.hero_image_path_mobile ?? null)
     setTitle(settings?.hero_title ?? 'Uma peça.\nDuas histórias.')
     setSubtitle(settings?.hero_subtitle ?? 'Roupas, sapatos e bolsas que ganham novos começos.')
     setButtonText(settings?.hero_button_text ?? 'Ver peças')
@@ -81,6 +85,27 @@ export default function AdminAppearance() {
       setError(err instanceof Error ? err.message : 'Erro ao enviar imagem')
     } finally {
       setUploadingHero(false)
+    }
+  }
+
+  async function handleHeroMobileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setError(null)
+    setUploadingHeroMobile(true)
+    try {
+      const path = `site/hero-mobile-${Date.now()}-${file.name}`
+      const { error: uploadError } = await supabase.storage.from('item-photos').upload(path, file, { upsert: true })
+      if (uploadError) throw uploadError
+      const { error: settingsError } = await supabase
+        .from('site_settings')
+        .upsert({ id: 'default', hero_image_path_mobile: path })
+      if (settingsError) throw settingsError
+      await loadData()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao enviar imagem')
+    } finally {
+      setUploadingHeroMobile(false)
     }
   }
 
@@ -166,30 +191,67 @@ export default function AdminAppearance() {
       <section className="mb-10">
         <h2 className="mb-1 text-xl font-semibold text-forest-900">"Uma peça. Duas histórias."</h2>
         <p className="mb-4 text-sm text-forest-500">
-          Bloco de destaque da página inicial — imagem, título, texto, botão e selos.
+          Bloco de destaque da página inicial — imagem, título, texto, botão e selos. As imagens de PC e celular são
+          independentes; se só uma for definida, ela é usada nas duas telas.
         </p>
 
-        <input ref={heroInputRef} type="file" accept="image/*" onChange={handleHeroChange} className="hidden" />
-        <button
-          type="button"
-          onClick={() => heroInputRef.current?.click()}
-          disabled={uploadingHero}
-          className="relative mb-6 flex h-48 w-full items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-cream-300 bg-cream-50 text-forest-600 hover:bg-cream-100 disabled:opacity-50"
-        >
-          {heroPath ? (
-            <img src={publicUrl(heroPath)} alt="" className="h-full w-full object-cover" />
-          ) : (
-            <span className="flex flex-col items-center gap-2">
-              <ImageIcon size={28} />
-              <span className="text-sm font-medium">
-                {uploadingHero ? 'Enviando...' : 'Adicionar imagem de fundo'}
+        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label className="mb-1 block text-sm text-forest-500">Imagem de fundo — PC</label>
+            <input ref={heroInputRef} type="file" accept="image/*" onChange={handleHeroChange} className="hidden" />
+            <button
+              type="button"
+              onClick={() => heroInputRef.current?.click()}
+              disabled={uploadingHero}
+              className="relative flex h-40 w-full items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-cream-300 bg-cream-50 text-forest-600 hover:bg-cream-100 disabled:opacity-50"
+            >
+              {heroPath ? (
+                <img src={publicUrl(heroPath)} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <span className="flex flex-col items-center gap-2">
+                  <ImageIcon size={28} />
+                  <span className="text-sm font-medium">
+                    {uploadingHero ? 'Enviando...' : 'Adicionar imagem (PC)'}
+                  </span>
+                </span>
+              )}
+              <span className="absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-forest-600 text-cream-50 shadow">
+                <Camera size={14} />
               </span>
-            </span>
-          )}
-          <span className="absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-forest-600 text-cream-50 shadow">
-            <Camera size={14} />
-          </span>
-        </button>
+            </button>
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm text-forest-500">Imagem de fundo — Celular</label>
+            <input
+              ref={heroMobileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleHeroMobileChange}
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={() => heroMobileInputRef.current?.click()}
+              disabled={uploadingHeroMobile}
+              className="relative flex h-40 w-full items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-cream-300 bg-cream-50 text-forest-600 hover:bg-cream-100 disabled:opacity-50"
+            >
+              {heroPathMobile ? (
+                <img src={publicUrl(heroPathMobile)} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <span className="flex flex-col items-center gap-2">
+                  <ImageIcon size={28} />
+                  <span className="text-sm font-medium">
+                    {uploadingHeroMobile ? 'Enviando...' : 'Adicionar imagem (celular)'}
+                  </span>
+                </span>
+              )}
+              <span className="absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-forest-600 text-cream-50 shadow">
+                <Camera size={14} />
+              </span>
+            </button>
+          </div>
+        </div>
 
         <form onSubmit={handleSaveText} className="flex max-w-lg flex-col gap-4">
           <div>

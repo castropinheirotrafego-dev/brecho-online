@@ -290,6 +290,7 @@ create policy "Admin gerencia fotos de categoria"
 create table public.site_settings (
   id text primary key,
   hero_image_path text,
+  hero_image_path_mobile text,
   hero_title text,
   hero_subtitle text,
   hero_button_text text,
