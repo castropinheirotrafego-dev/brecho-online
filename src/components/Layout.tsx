@@ -1,6 +1,6 @@
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { Home, ShoppingCart, User, LayoutDashboard, Tag, Heart } from 'lucide-react'
+import { Home, ShoppingBag, User, LayoutDashboard, Tag, Heart } from 'lucide-react'
 import { useFavorites } from '../contexts/FavoritesContext'
 import { useAuth } from '../contexts/AuthContext'
 import { useCart } from '../contexts/CartContext'
@@ -10,9 +10,9 @@ import Logo from './Logo'
 
 const mobileNavItems = [
   { to: '/', label: 'Início', icon: Home, end: true },
-  { to: '/carrinho', label: 'Carrinho', icon: ShoppingCart },
   { to: '/negociacoes', label: 'Negociações', icon: Tag },
   { to: '/favoritos', label: 'Favoritas', icon: Heart },
+  { to: '/perfil', label: 'Perfil', icon: User },
 ]
 
 export default function Layout() {
@@ -77,18 +77,6 @@ export default function Layout() {
                   </div>
                 )}
                 <Link
-                  to="/carrinho"
-                  className="relative hidden p-2 text-forest-500 hover:text-forest-700 sm:block"
-                  title="Carrinho"
-                >
-                  <ShoppingCart size={22} />
-                  {cartCount > 0 && (
-                    <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-forest-600 text-[10px] text-cream-50">
-                      {cartCount}
-                    </span>
-                  )}
-                </Link>
-                <Link
                   to="/perfil"
                   className="flex flex-shrink-0 items-center justify-center text-forest-500 hover:text-forest-700"
                   title="Perfil"
@@ -102,6 +90,14 @@ export default function Layout() {
                   ) : (
                     <span className="p-2">
                       <User size={22} />
+                    </span>
+                  )}
+                </Link>
+                <Link to="/carrinho" className="relative p-2 text-forest-500 hover:text-forest-700" title="Sacola">
+                  <ShoppingBag size={22} />
+                  {cartCount > 0 && (
+                    <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-forest-600 text-[10px] text-cream-50">
+                      {cartCount}
                     </span>
                   )}
                 </Link>
@@ -149,11 +145,6 @@ export default function Layout() {
             >
               <span className="relative">
                 <Icon size={20} />
-                {label === 'Carrinho' && cartCount > 0 && (
-                  <span className="absolute -right-2 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-forest-600 text-[9px] text-cream-50">
-                    {cartCount}
-                  </span>
-                )}
                 {label === 'Favoritas' && favoritesCount > 0 && (
                   <span className="absolute -right-2 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-forest-600 text-[9px] text-cream-50">
                     {favoritesCount}

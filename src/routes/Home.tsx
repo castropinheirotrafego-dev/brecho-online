@@ -106,8 +106,8 @@ export default function Home() {
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-4">
-        <h2 className="font-serif text-2xl font-medium text-forest-900">
-          Peças incríveis esperando sua próxima história
+        <h2 className="font-serif text-2xl font-medium uppercase text-forest-900">
+          Encontre sua próxima história
         </h2>
         <div className="h-px min-w-8 flex-1 bg-cream-300" aria-hidden />
         <button

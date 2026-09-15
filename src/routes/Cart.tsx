@@ -93,10 +93,10 @@ export default function Cart() {
   return (
     <div>
       <BackButton />
-      <Breadcrumbs items={[{ label: 'Início', to: '/' }, { label: 'Carrinho' }]} />
+      <Breadcrumbs items={[{ label: 'Início', to: '/' }, { label: 'Sacola' }]} />
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold text-forest-900">
-          Meu Carrinho{rows.length > 0 ? ` (${rows.length})` : ''}
+          Minha Sacola{rows.length > 0 ? ` (${rows.length})` : ''}
         </h1>
         <div className="flex items-center gap-4">
           {rows.length > 0 && (
@@ -112,7 +112,7 @@ export default function Cart() {
       {loading ? (
         <p className="text-forest-400">Carregando...</p>
       ) : rows.length === 0 ? (
-        <p className="text-center text-forest-400">Seu carrinho está vazio.</p>
+        <p className="text-center text-forest-400">Sua sacola está vazia.</p>
       ) : (
         <div className="flex flex-col gap-3">
           {rows.map((row) => {
