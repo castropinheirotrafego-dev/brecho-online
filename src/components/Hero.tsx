@@ -89,7 +89,7 @@ export default function Hero() {
   }
 
   return (
-    <section className="relative -mx-4 mb-8 flex min-h-[336px] w-auto flex-col justify-end overflow-hidden rounded-none bg-cream-200 sm:mx-0 sm:min-h-[420px] sm:w-full sm:rounded-3xl">
+    <section className="relative -mx-4 -mt-6 mb-8 flex min-h-[336px] w-auto flex-col justify-end overflow-hidden rounded-none bg-cream-200 sm:mx-0 sm:mt-0 sm:min-h-[420px] sm:w-full sm:rounded-3xl">
       {hasImage ? (
         <>
           <img
