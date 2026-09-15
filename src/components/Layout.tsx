@@ -1,6 +1,7 @@
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { Home, ShoppingCart, User, LayoutDashboard, Tag } from 'lucide-react'
+import { Home, ShoppingCart, User, LayoutDashboard, Tag, Heart } from 'lucide-react'
+import { useFavorites } from '../contexts/FavoritesContext'
 import { useAuth } from '../contexts/AuthContext'
 import { useCart } from '../contexts/CartContext'
 import { supabase } from '../lib/supabase'
@@ -11,12 +12,13 @@ const mobileNavItems = [
   { to: '/', label: 'Início', icon: Home, end: true },
   { to: '/carrinho', label: 'Carrinho', icon: ShoppingCart },
   { to: '/negociacoes', label: 'Negociações', icon: Tag },
-  { to: '/perfil', label: 'Perfil', icon: User },
+  { to: '/favoritos', label: 'Favoritas', icon: Heart },
 ]
 
 export default function Layout() {
   const { user, profile } = useAuth()
   const { count: cartCount } = useCart()
+  const { count: favoritesCount } = useFavorites()
   const [pendingOffers, setPendingOffers] = useState(0)
 
   useEffect(() => {
@@ -88,7 +90,7 @@ export default function Layout() {
                 </Link>
                 <Link
                   to="/perfil"
-                  className="hidden flex-shrink-0 items-center justify-center text-forest-500 hover:text-forest-700 sm:flex"
+                  className="flex flex-shrink-0 items-center justify-center text-forest-500 hover:text-forest-700"
                   title="Perfil"
                 >
                   {profile?.avatar_url ? (
@@ -150,6 +152,11 @@ export default function Layout() {
                 {label === 'Carrinho' && cartCount > 0 && (
                   <span className="absolute -right-2 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-forest-600 text-[9px] text-cream-50">
                     {cartCount}
+                  </span>
+                )}
+                {label === 'Favoritas' && favoritesCount > 0 && (
+                  <span className="absolute -right-2 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-forest-600 text-[9px] text-cream-50">
+                    {favoritesCount}
                   </span>
                 )}
               </span>

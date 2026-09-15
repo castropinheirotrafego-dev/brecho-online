@@ -156,13 +156,31 @@ export default function AdminItems() {
       if (editingId) {
         const { error: updateError } = await supabase
           .from('items')
-          .update({ name, type, category, condition, size, price: priceNumber, original_price: originalPriceNumber, description })
+          .update({
+            name,
+            type,
+            category,
+            condition,
+            size,
+            price: priceNumber,
+            original_price: originalPriceNumber,
+            description,
+          })
           .eq('id', editingId)
         if (updateError) throw updateError
       } else {
         const { data: item, error: itemError } = await supabase
           .from('items')
-          .insert({ name, type, category, condition, size, price: priceNumber, original_price: originalPriceNumber, description })
+          .insert({
+            name,
+            type,
+            category,
+            condition,
+            size,
+            price: priceNumber,
+            original_price: originalPriceNumber,
+            description,
+          })
           .select('id')
           .single()
         if (itemError || !item) throw itemError ?? new Error('Erro ao criar peça')
@@ -301,7 +319,7 @@ export default function AdminItems() {
             className="rounded-lg border border-cream-300 px-4 py-2 outline-none focus:border-forest-500"
           />
           <input
-            placeholder="Preço original (opcional)"
+            placeholder="Valor original (opcional)"
             value={originalPrice}
             onChange={(e) => setOriginalPrice(e.target.value)}
             className="rounded-lg border border-cream-300 px-4 py-2 outline-none focus:border-forest-500"

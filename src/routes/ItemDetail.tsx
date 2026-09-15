@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Heart } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { useCart } from '../contexts/CartContext'
+import { useFavorites } from '../contexts/FavoritesContext'
 import Breadcrumbs from '../components/Breadcrumbs'
 import BackButton from '../components/BackButton'
 import { itemConditionLabels, itemTypeLabels } from '../lib/itemTypes'
@@ -13,6 +15,7 @@ interface ItemDetailData {
   name: string
   description: string | null
   price: number
+  original_price: number | null
   size: string | null
   type: ItemType
   condition: ItemCondition
@@ -24,6 +27,7 @@ export default function ItemDetail() {
   const { id } = useParams<{ id: string }>()
   const { user } = useAuth()
   const { refresh: refreshCart } = useCart()
+  const { isFavorite, toggleFavorite } = useFavorites()
   const navigate = useNavigate()
   const [item, setItem] = useState<ItemDetailData | null>(null)
   const [activeImage, setActiveImage] = useState(0)
@@ -42,7 +46,9 @@ export default function ItemDetail() {
     setLoading(true)
     supabase
       .from('items')
-      .select('id, name, description, price, size, type, condition, status, item_images(storage_path, position)')
+      .select(
+        'id, name, description, price, original_price, size, type, condition, status, item_images(storage_path, position)',
+      )
       .eq('id', id)
       .single()
       .then(({ data }) => {
@@ -66,6 +72,11 @@ export default function ItemDetail() {
       .maybeSingle()
       .then(({ data }) => setInCart(!!data))
   }, [user, id])
+
+  function handleToggleFavorite() {
+    if (!user) return navigate('/entrar')
+    toggleFavorite(id!)
+  }
 
   async function handleAddToCart() {
     if (!user || !item) return navigate('/entrar')
@@ -150,7 +161,17 @@ export default function ItemDetail() {
         </div>
 
         <div>
-          <h1 className="text-2xl font-bold text-forest-900">{item.name}</h1>
+          <div className="flex items-start justify-between gap-3">
+            <h1 className="text-2xl font-bold text-forest-900">{item.name}</h1>
+            <button
+              type="button"
+              onClick={handleToggleFavorite}
+              title={isFavorite(id!) ? 'Remover dos favoritos' : 'Favoritar'}
+              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-cream-300 text-forest-700 hover:bg-cream-100"
+            >
+              <Heart size={18} className={isFavorite(id!) ? 'fill-rosequeimado text-rosequeimado' : ''} />
+            </button>
+          </div>
           <p className="mt-2 text-3xl font-bold text-forest-700">
             {item.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
           </p>
@@ -164,19 +185,27 @@ export default function ItemDetail() {
           <div className="mt-5 flex flex-col gap-3 text-sm">
             {item.size && (
               <div className="flex items-center gap-2">
-                <span className="font-medium text-forest-500">Tamanho:</span>
+                <span className="font-bold text-forest-500">Tamanho:</span>
                 <span className="rounded-full bg-cream-200 px-3 py-1 font-medium text-forest-700">{item.size}</span>
               </div>
             )}
             <div>
-              <p className="font-medium text-forest-500">Estado da peça</p>
+              <p className="font-bold text-forest-500">Estado da peça</p>
               <p className="text-forest-800">{itemConditionLabels[item.condition]}</p>
             </div>
+            {item.original_price != null && item.original_price > item.price && (
+              <div>
+                <p className="font-bold text-forest-500">Valor original</p>
+                <p className="text-gray-400 line-through">
+                  {item.original_price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                </p>
+              </div>
+            )}
           </div>
 
           {item.description && (
             <div className="mt-4">
-              <p className="text-sm font-medium text-forest-500">Descrição</p>
+              <p className="text-sm font-bold text-forest-500">Descrição</p>
               <p className="mt-1 whitespace-pre-line text-forest-600">{item.description}</p>
             </div>
           )}

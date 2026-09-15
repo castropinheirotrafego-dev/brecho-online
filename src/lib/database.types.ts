@@ -132,6 +132,26 @@ export interface Database {
           },
         ]
       }
+      favorites: {
+        Row: {
+          user_id: string
+          item_id: string
+          created_at: string
+        }
+        Insert: {
+          user_id: string
+          item_id: string
+        }
+        Update: Record<string, never>
+        Relationships: [
+          {
+            foreignKeyName: 'favorites_item_id_fkey'
+            columns: ['item_id']
+            referencedRelation: 'items'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       orders: {
         Row: {
           id: string

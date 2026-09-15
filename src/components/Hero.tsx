@@ -5,7 +5,7 @@ import type { HeroBadge } from '../lib/database.types'
 
 const defaultTitle = 'Uma peça.\nDuas histórias.'
 const defaultSubtitle = 'Roupas, sapatos e bolsas que ganham novos começos.'
-const defaultButtonText = 'Ver peças'
+const defaultButtonText = 'Explorar peças'
 const defaultBadges: HeroBadge[] = [
   { label: 'Peças únicas', image_path: null },
   { label: 'Comunidade feminina', image_path: null },
@@ -89,7 +89,7 @@ export default function Hero() {
   }
 
   return (
-    <section className="relative mb-8 flex min-h-[420px] w-full flex-col justify-end overflow-hidden rounded-3xl bg-cream-200">
+    <section className="relative -mx-4 mb-8 flex min-h-[336px] w-auto flex-col justify-end overflow-hidden rounded-none bg-cream-200 sm:mx-0 sm:min-h-[420px] sm:w-full sm:rounded-3xl">
       {hasImage ? (
         <>
           <img

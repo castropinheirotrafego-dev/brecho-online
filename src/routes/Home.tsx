@@ -37,7 +37,7 @@ export default function Home() {
       const sortConfig = sortColumns[filters.sort] ?? sortColumns.recent
       let query = supabase
         .from('items')
-        .select('id, name, price, original_price, size, type, category, condition, item_images(storage_path, position)')
+        .select('id, name, price, size, type, category, condition, item_images(storage_path, position)')
         .eq('status', 'available')
         .order(sortConfig.column, { ascending: sortConfig.ascending })
 
@@ -61,7 +61,6 @@ export default function Home() {
               id: row.id,
               name: row.name,
               price: row.price,
-              original_price: row.original_price,
               size: row.size,
               type: row.type,
               condition: row.condition,
@@ -117,7 +116,7 @@ export default function Home() {
           }}
           className="flex flex-shrink-0 items-center gap-1 rounded-full border border-cream-300 px-4 py-2 text-sm font-medium text-forest-700 hover:bg-cream-100"
         >
-          Ver todos <span aria-hidden>→</span>
+          Limpar filtros
         </button>
       </div>
 

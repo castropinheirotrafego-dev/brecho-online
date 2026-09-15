@@ -67,8 +67,9 @@ export default function Profile() {
     <div>
       <BackButton />
       <Breadcrumbs items={[{ label: 'Início', to: '/' }, { label: 'Meu perfil' }]} />
-      <h1 className="mb-6 text-2xl font-bold text-forest-900">Meu perfil</h1>
+      <h1 className="mb-6 text-2xl font-bold text-forest-900 md:text-center">Meu perfil</h1>
 
+      <div className="mx-auto md:max-w-md">
       <div className="mb-8 flex flex-col items-center">
         <div className="relative">
           <div className="h-[163px] w-[163px] overflow-hidden rounded-full border border-cream-300 bg-cream-200">
@@ -166,6 +167,7 @@ export default function Profile() {
         <LogOut size={16} />
         Sair da conta
       </button>
+      </div>
     </div>
   )
 }

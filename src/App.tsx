@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import { CartProvider } from './contexts/CartContext'
+import { FavoritesProvider } from './contexts/FavoritesContext'
 import Layout from './components/Layout'
 import ProtectedRoute from './components/ProtectedRoute'
 import AdminRoute from './components/AdminRoute'
@@ -11,6 +12,7 @@ import ItemDetail from './routes/ItemDetail'
 import Cart from './routes/Cart'
 import Profile from './routes/Profile'
 import Negotiations from './routes/Negotiations'
+import Favorites from './routes/Favorites'
 import AdminItems from './routes/admin/AdminItems'
 import AdminOffers from './routes/admin/AdminOffers'
 import AdminOrders from './routes/admin/AdminOrders'
@@ -21,6 +23,7 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <CartProvider>
+        <FavoritesProvider>
         <Routes>
           <Route element={<Layout />}>
             <Route index element={<Home />} />
@@ -48,6 +51,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <Negotiations />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="favoritos"
+              element={
+                <ProtectedRoute>
+                  <Favorites />
                 </ProtectedRoute>
               }
             />
@@ -85,6 +96,7 @@ export default function App() {
             />
           </Route>
         </Routes>
+        </FavoritesProvider>
         </CartProvider>
       </AuthProvider>
     </BrowserRouter>

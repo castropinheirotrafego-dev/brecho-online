@@ -144,6 +144,21 @@ create policy "Usuário gerencia o próprio carrinho"
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
 
+-- Peças favoritadas por cada usuária
+create table public.favorites (
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  item_id uuid not null references public.items(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (user_id, item_id)
+);
+
+alter table public.favorites enable row level security;
+
+create policy "Usuário gerencia os próprios favoritos"
+  on public.favorites for all
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
 -- Pedidos (gerados no checkout do carrinho ou ao fechar uma negociação)
 create type public.order_status as enum ('pending_delivery', 'completed', 'cancelled');
 
