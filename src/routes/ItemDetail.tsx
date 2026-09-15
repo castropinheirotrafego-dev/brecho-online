@@ -237,7 +237,7 @@ export default function ItemDetail() {
                 disabled={addingToCart || inCart}
                 className="w-full rounded-full bg-forest-600 px-4 py-3 font-medium text-cream-50 hover:bg-forest-700 disabled:opacity-50"
               >
-                {inCart ? 'Já está no carrinho' : addingToCart ? 'Adicionando...' : 'Adicionar ao carrinho'}
+                {inCart ? 'Já está na sacola' : addingToCart ? 'Adicionando...' : 'Adicionar à sacola'}
               </button>
               {!showOfferForm ? (
                 <button
