@@ -86,8 +86,22 @@ export default function Layout() {
                     </span>
                   )}
                 </Link>
-                <Link to="/perfil" className="hidden p-2 text-forest-500 hover:text-forest-700 sm:block" title="Perfil">
-                  <User size={22} />
+                <Link
+                  to="/perfil"
+                  className="hidden flex-shrink-0 items-center justify-center text-forest-500 hover:text-forest-700 sm:flex"
+                  title="Perfil"
+                >
+                  {profile?.avatar_url ? (
+                    <img
+                      src={profile.avatar_url}
+                      alt={profile.full_name}
+                      className="h-9 w-9 rounded-full border border-cream-300 object-cover"
+                    />
+                  ) : (
+                    <span className="p-2">
+                      <User size={22} />
+                    </span>
+                  )}
                 </Link>
               </>
             ) : (

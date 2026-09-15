@@ -140,12 +140,6 @@ export default function Hero() {
         >
           {buttonText} <span aria-hidden>→</span>
         </a>
-
-        {badges.length > 0 && (
-          <div className="flex flex-wrap items-center justify-center gap-5 md:hidden">
-            {badges.map((badge, i) => renderBadge(badge, i))}
-          </div>
-        )}
       </div>
     </section>
   )
