@@ -76,6 +76,14 @@ export default function Layout() {
                     </Link>
                   </div>
                 )}
+                <Link to="/carrinho" className="relative p-2 text-forest-500 hover:text-forest-700" title="Sacola">
+                  <ShoppingBag size={22} />
+                  {cartCount > 0 && (
+                    <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-forest-600 text-[10px] text-cream-50">
+                      {cartCount}
+                    </span>
+                  )}
+                </Link>
                 <Link
                   to="/perfil"
                   className="flex flex-shrink-0 items-center justify-center text-forest-500 hover:text-forest-700"
@@ -90,14 +98,6 @@ export default function Layout() {
                   ) : (
                     <span className="p-2">
                       <User size={22} />
-                    </span>
-                  )}
-                </Link>
-                <Link to="/carrinho" className="relative p-2 text-forest-500 hover:text-forest-700" title="Sacola">
-                  <ShoppingBag size={22} />
-                  {cartCount > 0 && (
-                    <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-forest-600 text-[10px] text-cream-50">
-                      {cartCount}
                     </span>
                   )}
                 </Link>

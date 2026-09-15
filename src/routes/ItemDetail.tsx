@@ -130,12 +130,20 @@ export default function ItemDetail() {
 
       <div className="grid gap-8 md:grid-cols-2">
         <div>
-          <div className="aspect-square w-full overflow-hidden rounded-2xl bg-cream-100">
+          <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-cream-100">
             {activeUrl ? (
               <img src={activeUrl} alt={item.name} className="h-full w-full object-cover" />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-forest-400">Sem foto</div>
             )}
+            <button
+              type="button"
+              onClick={handleToggleFavorite}
+              title={isFavorite(id!) ? 'Remover dos favoritos' : 'Favoritar'}
+              className="absolute bottom-3 right-3 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-white/90 text-forest-700 shadow-sm hover:bg-white"
+            >
+              <Heart size={18} className={isFavorite(id!) ? 'fill-rosequeimado text-rosequeimado' : ''} />
+            </button>
           </div>
           {images.length > 1 && (
             <div className="mt-3 flex gap-2">
@@ -161,17 +169,7 @@ export default function ItemDetail() {
         </div>
 
         <div>
-          <div className="flex items-start justify-between gap-3">
-            <h1 className="text-2xl font-bold text-forest-900">{item.name}</h1>
-            <button
-              type="button"
-              onClick={handleToggleFavorite}
-              title={isFavorite(id!) ? 'Remover dos favoritos' : 'Favoritar'}
-              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-cream-300 text-forest-700 hover:bg-cream-100"
-            >
-              <Heart size={18} className={isFavorite(id!) ? 'fill-rosequeimado text-rosequeimado' : ''} />
-            </button>
-          </div>
+          <h1 className="text-[30px] font-bold leading-tight text-forest-900">{item.name}</h1>
           <p className="mt-2 text-3xl font-bold text-forest-700">
             {item.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
           </p>
@@ -196,7 +194,7 @@ export default function ItemDetail() {
             {item.original_price != null && item.original_price > item.price && (
               <div>
                 <p className="font-bold text-forest-500">Valor original</p>
-                <p className="text-gray-400 line-through">
+                <p className="text-forest-800">
                   {item.original_price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                 </p>
               </div>

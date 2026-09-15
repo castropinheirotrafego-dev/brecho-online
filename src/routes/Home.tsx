@@ -31,6 +31,15 @@ export default function Home() {
     sort: 'recent',
   })
 
+  const hasActiveFilters =
+    Boolean(search.trim()) ||
+    Boolean(type) ||
+    Boolean(filters.category) ||
+    Boolean(filters.size) ||
+    Boolean(filters.condition) ||
+    Boolean(filters.maxPrice) ||
+    filters.sort !== 'recent'
+
   useEffect(() => {
     setLoading(true)
     const timeout = setTimeout(async () => {
@@ -110,16 +119,18 @@ export default function Home() {
           Encontre sua próxima história
         </h2>
         <div className="h-px min-w-8 flex-1 bg-cream-300" aria-hidden />
-        <button
-          onClick={() => {
-            setSearch('')
-            setType('')
-            setFilters({ category: '', size: '', condition: '', maxPrice: '', sort: 'recent' })
-          }}
-          className="flex flex-shrink-0 items-center gap-1 rounded-full border border-cream-300 px-4 py-2 text-sm font-medium text-forest-700 hover:bg-cream-100"
-        >
-          Limpar filtros
-        </button>
+        {hasActiveFilters && (
+          <button
+            onClick={() => {
+              setSearch('')
+              setType('')
+              setFilters({ category: '', size: '', condition: '', maxPrice: '', sort: 'recent' })
+            }}
+            className="flex flex-shrink-0 items-center gap-1 rounded-full border border-cream-300 px-4 py-2 text-sm font-medium text-forest-700 hover:bg-cream-100"
+          >
+            Limpar filtros
+          </button>
+        )}
       </div>
 
       {loading ? (

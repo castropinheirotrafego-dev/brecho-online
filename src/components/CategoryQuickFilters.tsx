@@ -37,7 +37,7 @@ export default function CategoryQuickFilters({
   }, [])
 
   return (
-    <div className="mb-6 flex gap-5 overflow-x-auto pb-1">
+    <div className="mb-6 flex gap-3 overflow-x-auto pb-1">
       {quickCategoryFilters.map((opt) => {
         const active = value === opt.value
         const coverPath = covers[opt.value]
@@ -46,7 +46,7 @@ export default function CategoryQuickFilters({
           <button
             key={opt.value || 'tudo'}
             onClick={() => onChange(opt.value)}
-            className="flex flex-shrink-0 flex-col items-center gap-2"
+            className="flex w-20 flex-shrink-0 flex-col items-center gap-2"
           >
             <span
               className={`flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-2 ${
@@ -61,7 +61,9 @@ export default function CategoryQuickFilters({
                 </span>
               )}
             </span>
-            <span className={`text-xs uppercase ${active ? 'font-semibold text-forest-900' : 'text-forest-500'}`}>
+            <span
+              className={`text-center text-xs uppercase leading-tight ${active ? 'font-semibold text-forest-900' : 'text-forest-500'}`}
+            >
               {opt.label}
             </span>
           </button>

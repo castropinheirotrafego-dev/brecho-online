@@ -92,15 +92,13 @@ export default function Hero() {
     <section className="relative -mx-4 -mt-6 mb-8 flex min-h-[336px] w-auto flex-col justify-end overflow-hidden rounded-none bg-cream-200 sm:mx-0 sm:mt-0 sm:min-h-[420px] sm:w-full sm:rounded-3xl">
       {hasImage ? (
         <>
-          <img
-            src={mobileImageUrl ?? imageUrl ?? undefined}
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover md:hidden"
+          <div
+            className="absolute inset-0 bg-cover bg-center md:hidden"
+            style={{ backgroundImage: `url(${mobileImageUrl ?? imageUrl})` }}
           />
-          <img
-            src={imageUrl ?? mobileImageUrl ?? undefined}
-            alt=""
-            className="absolute inset-0 hidden h-full w-full object-cover md:block"
+          <div
+            className="absolute inset-0 hidden bg-cover bg-center md:block"
+            style={{ backgroundImage: `url(${imageUrl ?? mobileImageUrl})` }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-forest-900/80 via-forest-900/20 to-transparent" />
         </>

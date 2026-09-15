@@ -92,7 +92,7 @@ export default function Profile() {
             <Camera size={20} />
           </button>
         </div>
-        <p className="mt-4 text-center font-serif text-4xl font-semibold text-forest-900">{profile?.full_name}</p>
+        <p className="mt-4 text-center font-serif text-[30px] font-semibold text-forest-900">{profile?.full_name}</p>
         {uploadingAvatar && <p className="mt-1 text-sm text-forest-500">Enviando foto...</p>}
       </div>
       {avatarError && <p className="mb-4 text-center text-sm text-red-600">{avatarError}</p>}
