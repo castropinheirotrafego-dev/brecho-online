@@ -46,7 +46,7 @@ export default function PurchaseConfirmation({ itemName }: { itemName?: string }
           </a>
         )}
         <Link
-          to="/perfil"
+          to="/negociacoes"
           className="rounded-full border border-forest-600 px-4 py-3 font-medium text-forest-700 hover:bg-forest-50"
         >
           Ver meus pedidos
