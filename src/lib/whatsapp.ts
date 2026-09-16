@@ -1,5 +1,11 @@
 import { supabase } from './supabase'
 
+export function normalizePhoneDigits(phone: string | null | undefined): string | null {
+  const digits = phone?.replace(/\D/g, '')
+  if (!digits) return null
+  return digits.length <= 11 ? `55${digits}` : digits
+}
+
 export async function getAdminPhoneDigits(): Promise<string | null> {
   const { data } = await supabase
     .from('profiles')
@@ -9,10 +15,7 @@ export async function getAdminPhoneDigits(): Promise<string | null> {
     .limit(1)
     .maybeSingle()
 
-  const digits = data?.phone?.replace(/\D/g, '')
-  if (!digits) return null
-
-  return digits.length <= 11 ? `55${digits}` : digits
+  return normalizePhoneDigits(data?.phone)
 }
 
 export function buildWhatsappUrl(phoneDigits: string, message: string): string {
@@ -23,4 +26,10 @@ export async function getAdminWhatsappUrl(message: string): Promise<string | nul
   const phone = await getAdminPhoneDigits()
   if (!phone) return null
   return buildWhatsappUrl(phone, message)
+}
+
+export function getCustomerWhatsappUrl(phone: string | null | undefined, message: string): string | null {
+  const digits = normalizePhoneDigits(phone)
+  if (!digits) return null
+  return buildWhatsappUrl(digits, message)
 }

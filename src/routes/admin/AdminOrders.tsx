@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
+import { MessageCircle } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import Breadcrumbs from '../../components/Breadcrumbs'
 import BackButton from '../../components/BackButton'
+import { getCustomerWhatsappUrl } from '../../lib/whatsapp'
 import type { OrderStatus } from '../../lib/database.types'
 
 interface OrderRow {
@@ -9,6 +11,7 @@ interface OrderRow {
   item_name: string
   buyer_name: string
   buyer_phone: string
+  buyer_avatar: string | null
   price: number
   status: OrderStatus
   created_at: string
@@ -37,7 +40,7 @@ export default function AdminOrders() {
     const { data } = await supabase
       .from('orders')
       .select(
-        'id, price, status, created_at, item:items(name), buyer:profiles!orders_buyer_id_fkey(full_name, phone)',
+        'id, price, status, created_at, item:items(name), buyer:profiles!orders_buyer_id_fkey(full_name, phone, avatar_url)',
       )
       .order('created_at', { ascending: false })
 
@@ -50,6 +53,7 @@ export default function AdminOrders() {
         item_name: Array.isArray(row.item) ? row.item[0]?.name : row.item?.name,
         buyer_name: Array.isArray(row.buyer) ? row.buyer[0]?.full_name : row.buyer?.full_name,
         buyer_phone: Array.isArray(row.buyer) ? row.buyer[0]?.phone : row.buyer?.phone,
+        buyer_avatar: Array.isArray(row.buyer) ? row.buyer[0]?.avatar_url : row.buyer?.avatar_url,
       })),
     )
     setLoading(false)
@@ -89,15 +93,39 @@ export default function AdminOrders() {
               {pending.map((order) => (
                 <div key={order.id} className="rounded-xl border border-cream-300 bg-white p-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div>
-                      <p className="font-medium text-forest-900">{order.item_name}</p>
-                      <p className="text-sm text-forest-500">
-                        {order.buyer_name} · {order.buyer_phone}
-                      </p>
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full border border-cream-300 bg-cream-200">
+                        {order.buyer_avatar ? (
+                          <img src={order.buyer_avatar} alt={order.buyer_name} className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center font-serif text-sm text-forest-500">
+                            {order.buyer_name?.[0]?.toUpperCase() ?? '?'}
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-medium text-forest-900">{order.item_name}</p>
+                        <p className="text-sm text-forest-500">
+                          {order.buyer_name} · {order.buyer_phone}
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-lg font-bold text-forest-700">
-                      {order.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                    </p>
+                    <div className="flex items-center gap-3">
+                      <p className="text-lg font-bold text-forest-700">
+                        {order.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                      </p>
+                      {getCustomerWhatsappUrl(order.buyer_phone, `Olá, ${order.buyer_name}! Sobre o seu pedido de "${order.item_name}"...`) && (
+                        <a
+                          href={getCustomerWhatsappUrl(order.buyer_phone, `Olá, ${order.buyer_name}! Sobre o seu pedido de "${order.item_name}"...`)!}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="Falar no WhatsApp"
+                          className="flex h-9 w-9 items-center justify-center rounded-full border border-green-600 text-green-600 hover:bg-green-50"
+                        >
+                          <MessageCircle size={18} />
+                        </a>
+                      )}
+                    </div>
                   </div>
                   <div className="mt-3 flex gap-2">
                     <button
@@ -130,12 +158,36 @@ export default function AdminOrders() {
                   key={order.id}
                   className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-cream-300 bg-white p-3"
                 >
-                  <p className="text-forest-700">
-                    {order.buyer_name} — {order.item_name}
-                  </p>
-                  <span className={`rounded-full px-3 py-1 text-xs font-medium ${statusColors[order.status]}`}>
-                    {statusLabels[order.status]}
-                  </span>
+                  <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 flex-shrink-0 overflow-hidden rounded-full border border-cream-300 bg-cream-200">
+                      {order.buyer_avatar ? (
+                        <img src={order.buyer_avatar} alt={order.buyer_name} className="h-full w-full object-cover" />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center font-serif text-xs text-forest-500">
+                          {order.buyer_name?.[0]?.toUpperCase() ?? '?'}
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-forest-700">
+                      {order.buyer_name} — {order.item_name}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`rounded-full px-3 py-1 text-xs font-medium ${statusColors[order.status]}`}>
+                      {statusLabels[order.status]}
+                    </span>
+                    {getCustomerWhatsappUrl(order.buyer_phone, `Olá, ${order.buyer_name}! Sobre o seu pedido de "${order.item_name}"...`) && (
+                      <a
+                        href={getCustomerWhatsappUrl(order.buyer_phone, `Olá, ${order.buyer_name}! Sobre o seu pedido de "${order.item_name}"...`)!}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Falar no WhatsApp"
+                        className="flex h-8 w-8 items-center justify-center rounded-full border border-green-600 text-green-600 hover:bg-green-50"
+                      >
+                        <MessageCircle size={16} />
+                      </a>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

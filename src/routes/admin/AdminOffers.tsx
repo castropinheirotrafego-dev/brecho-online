@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { MessageCircle } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import Breadcrumbs from '../../components/Breadcrumbs'
 import BackButton from '../../components/BackButton'
+import { getCustomerWhatsappUrl } from '../../lib/whatsapp'
 import type { OfferStatus } from '../../lib/database.types'
 
 interface OfferRow {
@@ -12,6 +14,7 @@ interface OfferRow {
   item_name: string
   buyer_name: string
   buyer_avatar: string | null
+  buyer_phone: string | null
   status: OfferStatus
   last_amount: number
   last_author: 'buyer' | 'admin'
@@ -45,7 +48,7 @@ export default function AdminOffers() {
     const { data } = await supabase
       .from('offers')
       .select(
-        'id, item_id, status, last_amount, last_author, updated_at, item:items(name), buyer:profiles!offers_buyer_id_fkey(full_name, avatar_url)',
+        'id, item_id, status, last_amount, last_author, updated_at, item:items(name), buyer:profiles!offers_buyer_id_fkey(full_name, avatar_url, phone)',
       )
       .order('updated_at', { ascending: false })
 
@@ -56,6 +59,7 @@ export default function AdminOffers() {
         item_name: Array.isArray(row.item) ? row.item[0]?.name : row.item?.name,
         buyer_name: Array.isArray(row.buyer) ? row.buyer[0]?.full_name : row.buyer?.full_name,
         buyer_avatar: Array.isArray(row.buyer) ? row.buyer[0]?.avatar_url : row.buyer?.avatar_url,
+        buyer_phone: Array.isArray(row.buyer) ? row.buyer[0]?.phone : row.buyer?.phone,
         status: row.status,
         last_amount: row.last_amount,
         last_author: row.last_author,
@@ -139,9 +143,22 @@ export default function AdminOffers() {
                         </p>
                       </div>
                     </div>
-                    <p className="text-lg font-bold text-forest-700">
-                      {offer.last_amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                    </p>
+                    <div className="flex items-center gap-3">
+                      <p className="text-lg font-bold text-forest-700">
+                        {offer.last_amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                      </p>
+                      {getCustomerWhatsappUrl(offer.buyer_phone, `Olá, ${offer.buyer_name}! Sobre a peça "${offer.item_name}"...`) && (
+                        <a
+                          href={getCustomerWhatsappUrl(offer.buyer_phone, `Olá, ${offer.buyer_name}! Sobre a peça "${offer.item_name}"...`)!}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="Falar no WhatsApp"
+                          className="flex h-9 w-9 items-center justify-center rounded-full border border-green-600 text-green-600 hover:bg-green-50"
+                        >
+                          <MessageCircle size={18} />
+                        </a>
+                      )}
+                    </div>
                   </div>
 
                   {offer.last_author === 'buyer' ? (
@@ -225,9 +242,22 @@ export default function AdminOffers() {
                       <p className="text-sm text-forest-500">{offer.item_name}</p>
                     </div>
                   </div>
-                  <span className={`rounded-full px-3 py-1 text-xs font-medium ${statusColors[offer.status]}`}>
-                    {statusLabels[offer.status]}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className={`rounded-full px-3 py-1 text-xs font-medium ${statusColors[offer.status]}`}>
+                      {statusLabels[offer.status]}
+                    </span>
+                    {getCustomerWhatsappUrl(offer.buyer_phone, `Olá, ${offer.buyer_name}! Sobre a peça "${offer.item_name}"...`) && (
+                      <a
+                        href={getCustomerWhatsappUrl(offer.buyer_phone, `Olá, ${offer.buyer_name}! Sobre a peça "${offer.item_name}"...`)!}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Falar no WhatsApp"
+                        className="flex h-8 w-8 items-center justify-center rounded-full border border-green-600 text-green-600 hover:bg-green-50"
+                      >
+                        <MessageCircle size={16} />
+                      </a>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

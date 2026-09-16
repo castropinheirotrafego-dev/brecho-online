@@ -8,7 +8,7 @@ import { supabase } from '../lib/supabase'
 import BackToTopButton from './BackToTopButton'
 import Logo from './Logo'
 
-const mobileNavItems = [
+const baseMobileNavItems = [
   { to: '/', label: 'Início', icon: Home, end: true },
   { to: '/negociacoes', label: 'Negociações', icon: Tag },
   { to: '/favoritos', label: 'Favoritas', icon: Heart },
@@ -20,6 +20,10 @@ export default function Layout() {
   const { count: cartCount } = useCart()
   const { count: favoritesCount } = useFavorites()
   const [pendingOffers, setPendingOffers] = useState(0)
+  const isAdmin = Boolean(profile?.is_admin)
+  const mobileNavItems = isAdmin
+    ? baseMobileNavItems.filter((item) => item.label === 'Início' || item.label === 'Perfil')
+    : baseMobileNavItems
 
   useEffect(() => {
     if (!profile?.is_admin) return
@@ -75,33 +79,41 @@ export default function Layout() {
                     </Link>
                   </div>
                 )}
-                <Link
-                  to="/negociacoes"
-                  className="hidden p-2 text-forest-500 hover:text-forest-700 sm:block"
-                  title="Negociações"
-                >
-                  <Tag size={22} />
-                </Link>
-                <Link
-                  to="/favoritos"
-                  className="relative hidden p-2 text-forest-500 hover:text-forest-700 sm:block"
-                  title="Favoritas"
-                >
-                  <Heart size={22} />
-                  {favoritesCount > 0 && (
-                    <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-forest-600 text-[10px] text-cream-50">
-                      {favoritesCount}
-                    </span>
-                  )}
-                </Link>
-                <Link to="/carrinho" className="relative p-2 text-forest-500 hover:text-forest-700" title="Sacola">
-                  <ShoppingBag size={22} />
-                  {cartCount > 0 && (
-                    <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-forest-600 text-[10px] text-cream-50">
-                      {cartCount}
-                    </span>
-                  )}
-                </Link>
+                {!isAdmin && (
+                  <>
+                    <Link
+                      to="/negociacoes"
+                      className="hidden p-2 text-forest-500 hover:text-forest-700 sm:block"
+                      title="Minhas negociações"
+                    >
+                      <Tag size={22} />
+                    </Link>
+                    <Link
+                      to="/favoritos"
+                      className="relative hidden p-2 text-forest-500 hover:text-forest-700 sm:block"
+                      title="Favoritas"
+                    >
+                      <Heart size={22} />
+                      {favoritesCount > 0 && (
+                        <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-forest-600 text-[10px] text-cream-50">
+                          {favoritesCount}
+                        </span>
+                      )}
+                    </Link>
+                    <Link
+                      to="/carrinho"
+                      className="relative p-2 text-forest-500 hover:text-forest-700"
+                      title="Sacola"
+                    >
+                      <ShoppingBag size={22} />
+                      {cartCount > 0 && (
+                        <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-forest-600 text-[10px] text-cream-50">
+                          {cartCount}
+                        </span>
+                      )}
+                    </Link>
+                  </>
+                )}
                 <Link
                   to="/perfil"
                   className="flex flex-shrink-0 items-center justify-center text-forest-500 hover:text-forest-700"
