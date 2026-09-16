@@ -64,18 +64,36 @@ export default function Layout() {
                     </Link>
                     <Link
                       to="/admin/ofertas"
-                      className="relative p-2 text-forest-500 hover:text-forest-700"
-                      title="Ofertas recebidas"
+                      className="relative text-sm font-medium text-forest-500 hover:text-forest-700"
                     >
-                      <Tag size={20} />
+                      Ofertas
                       {pendingOffers > 0 && (
-                        <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">
+                        <span className="absolute -right-3 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">
                           {pendingOffers}
                         </span>
                       )}
                     </Link>
                   </div>
                 )}
+                <Link
+                  to="/negociacoes"
+                  className="hidden p-2 text-forest-500 hover:text-forest-700 sm:block"
+                  title="Negociações"
+                >
+                  <Tag size={22} />
+                </Link>
+                <Link
+                  to="/favoritos"
+                  className="relative hidden p-2 text-forest-500 hover:text-forest-700 sm:block"
+                  title="Favoritas"
+                >
+                  <Heart size={22} />
+                  {favoritesCount > 0 && (
+                    <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-forest-600 text-[10px] text-cream-50">
+                      {favoritesCount}
+                    </span>
+                  )}
+                </Link>
                 <Link to="/carrinho" className="relative p-2 text-forest-500 hover:text-forest-700" title="Sacola">
                   <ShoppingBag size={22} />
                   {cartCount > 0 && (

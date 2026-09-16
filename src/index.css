@@ -56,3 +56,7 @@ img {
 html {
   scroll-behavior: smooth;
 }
+
+button:not(:disabled) {
+  cursor: pointer;
+}
