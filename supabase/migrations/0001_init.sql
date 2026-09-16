@@ -286,7 +286,8 @@ create policy "Usuário remove seu próprio avatar"
 -- a foto automática (da primeira peça cadastrada daquele tipo)
 create table public.category_images (
   type public.item_type primary key,
-  storage_path text not null,
+  storage_path text,
+  label text,
   updated_at timestamptz not null default now()
 );
 
@@ -310,6 +311,9 @@ create table public.site_settings (
   hero_subtitle text,
   hero_button_text text,
   hero_badges jsonb not null default '[{"label":"Peças únicas","image_path":null},{"label":"Comunidade feminina","image_path":null},{"label":"Moda mais consciente","image_path":null}]'::jsonb,
+  banner_heading text,
+  banner_tagline text,
+  banner_items jsonb not null default '[{"label":"Moda mais consciente"},{"label":"Impacto positivo"},{"label":"Comunidade feminina"},{"label":"Novos começos"}]'::jsonb,
   updated_at timestamptz not null default now()
 );
 

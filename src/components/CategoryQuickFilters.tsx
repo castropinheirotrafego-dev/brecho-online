@@ -12,6 +12,7 @@ export default function CategoryQuickFilters({
   onChange: (value: ItemType | '') => void
 }) {
   const [covers, setCovers] = useState<Record<string, string>>({})
+  const [labels, setLabels] = useState<Record<string, string>>({})
 
   useEffect(() => {
     Promise.all([
@@ -20,7 +21,7 @@ export default function CategoryQuickFilters({
         .select('type, item_images(storage_path, position)')
         .eq('status', 'available')
         .order('created_at', { ascending: false }),
-      supabase.from('category_images').select('type, storage_path'),
+      supabase.from('category_images').select('type, storage_path, label'),
     ]).then(([itemsRes, categoryImagesRes]) => {
       const next: Record<string, string> = {}
       const data = itemsRes.data as { type: string; item_images: { storage_path: string; position: number }[] }[] | null
@@ -29,10 +30,13 @@ export default function CategoryQuickFilters({
         const sorted = [...(row.item_images ?? [])].sort((a, b) => a.position - b.position)
         if (sorted[0]) next[row.type] = sorted[0].storage_path
       }
+      const nextLabels: Record<string, string> = {}
       for (const row of categoryImagesRes.data ?? []) {
-        next[row.type] = row.storage_path
+        if (row.storage_path) next[row.type] = row.storage_path
+        if (row.label) nextLabels[row.type] = row.label
       }
       setCovers(next)
+      setLabels(nextLabels)
     })
   }, [])
 
@@ -64,7 +68,7 @@ export default function CategoryQuickFilters({
             <span
               className={`text-center text-xs uppercase leading-tight ${active ? 'font-semibold text-forest-900' : 'text-forest-500'}`}
             >
-              {opt.label}
+              {labels[opt.value] ?? opt.label}
             </span>
           </button>
         )

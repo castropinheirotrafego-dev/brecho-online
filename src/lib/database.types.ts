@@ -21,6 +21,9 @@ export interface HeroBadge {
   label: string
   image_path: string | null
 }
+export interface BannerItem {
+  label: string
+}
 
 export interface Database {
   public: {
@@ -251,15 +254,18 @@ export interface Database {
       category_images: {
         Row: {
           type: ItemType
-          storage_path: string
+          storage_path: string | null
+          label: string | null
           updated_at: string
         }
         Insert: {
           type: ItemType
-          storage_path: string
+          storage_path?: string | null
+          label?: string | null
         }
         Update: {
-          storage_path?: string
+          storage_path?: string | null
+          label?: string | null
         }
         Relationships: []
       }
@@ -272,6 +278,9 @@ export interface Database {
           hero_subtitle: string | null
           hero_button_text: string | null
           hero_badges: HeroBadge[]
+          banner_heading: string | null
+          banner_tagline: string | null
+          banner_items: BannerItem[]
           updated_at: string
         }
         Insert: {
@@ -282,6 +291,9 @@ export interface Database {
           hero_subtitle?: string | null
           hero_button_text?: string | null
           hero_badges?: HeroBadge[]
+          banner_heading?: string | null
+          banner_tagline?: string | null
+          banner_items?: BannerItem[]
         }
         Update: {
           hero_image_path?: string | null
@@ -290,6 +302,9 @@ export interface Database {
           hero_subtitle?: string | null
           hero_button_text?: string | null
           hero_badges?: HeroBadge[]
+          banner_heading?: string | null
+          banner_tagline?: string | null
+          banner_items?: BannerItem[]
         }
         Relationships: []
       }
