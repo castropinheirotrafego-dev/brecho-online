@@ -16,7 +16,7 @@ const baseMobileNavItems = [
 ]
 
 export default function Layout() {
-  const { user, profile } = useAuth()
+  const { user, profile, profileLoading } = useAuth()
   const { count: cartCount } = useCart()
   const { count: favoritesCount } = useFavorites()
   const [pendingOffers, setPendingOffers] = useState(0)
@@ -79,7 +79,7 @@ export default function Layout() {
                     </Link>
                   </div>
                 )}
-                {!isAdmin && (
+                {!profileLoading && !isAdmin && (
                   <>
                     <Link
                       to="/negociacoes"
@@ -160,7 +160,7 @@ export default function Layout() {
         Próxima Dona — roupas, sapatos e bolsas que ganham novas histórias.
       </footer>
 
-      {user && (
+      {user && !profileLoading && (
         <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-cream-300 bg-cream-50 sm:hidden">
           {mobileNavItems.map(({ to, label, icon: Icon, end }) => (
             <NavLink
