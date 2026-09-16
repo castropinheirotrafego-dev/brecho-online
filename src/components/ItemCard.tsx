@@ -45,6 +45,8 @@ export default function ItemCard({ item }: { item: ItemCardData }) {
           <img
             src={imageUrl}
             alt={item.name}
+            loading="lazy"
+            decoding="async"
             className="h-full w-full object-cover transition group-hover:scale-105"
           />
         ) : (

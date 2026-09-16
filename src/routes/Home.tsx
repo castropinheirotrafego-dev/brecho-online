@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Search } from 'lucide-react'
 import { supabase } from '../lib/supabase'
@@ -40,9 +40,12 @@ export default function Home() {
     Boolean(filters.maxPrice) ||
     filters.sort !== 'recent'
 
+  const isFirstRun = useRef(true)
+
   useEffect(() => {
     setLoading(true)
-    const timeout = setTimeout(async () => {
+
+    async function fetchItems() {
       const sortConfig = sortColumns[filters.sort] ?? sortColumns.recent
       let query = supabase
         .from('items')
@@ -79,8 +82,16 @@ export default function Home() {
         )
       }
       setLoading(false)
-    }, 300)
+    }
 
+    // Busca a primeira leva sem atraso; só faz debounce nas trocas subsequentes de busca/filtros
+    if (isFirstRun.current) {
+      isFirstRun.current = false
+      fetchItems()
+      return
+    }
+
+    const timeout = setTimeout(fetchItems, 300)
     return () => clearTimeout(timeout)
   }, [search, type, filters])
 
