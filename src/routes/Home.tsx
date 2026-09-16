@@ -91,12 +91,6 @@ export default function Home() {
       <div className="mb-4 flex items-center gap-4">
         <h2 className="flex-shrink-0 font-serif text-2xl font-medium text-oliva">Categorias</h2>
         <div className="h-px flex-1 bg-cream-300" aria-hidden />
-        <button
-          onClick={() => setType('')}
-          className="flex flex-shrink-0 items-center gap-1 text-sm font-medium text-forest-600 hover:text-forest-800"
-        >
-          Ver todas <span aria-hidden>→</span>
-        </button>
       </div>
 
       <CategoryQuickFilters value={type} onChange={setType} />
