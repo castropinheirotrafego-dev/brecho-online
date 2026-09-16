@@ -1,6 +1,6 @@
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { Home, ShoppingBag, User, LayoutDashboard, Tag, Heart } from 'lucide-react'
+import { Home, ShoppingBag, User, LayoutDashboard, Tag, Heart, Package, ImageIcon } from 'lucide-react'
 import { useFavorites } from '../contexts/FavoritesContext'
 import { useAuth } from '../contexts/AuthContext'
 import { useCart } from '../contexts/CartContext'
@@ -15,15 +15,22 @@ const baseMobileNavItems = [
   { to: '/perfil', label: 'Perfil', icon: User },
 ]
 
+const adminMobileNavItems = [
+  { to: '/', label: 'Início', icon: Home, end: true },
+  { to: '/admin/pecas', label: 'Minhas peças', icon: LayoutDashboard },
+  { to: '/admin/pedidos', label: 'Pedidos', icon: Package },
+  { to: '/admin/aparencia', label: 'Aparência', icon: ImageIcon },
+  { to: '/admin/ofertas', label: 'Ofertas', icon: Tag },
+  { to: '/perfil', label: 'Perfil', icon: User },
+]
+
 export default function Layout() {
   const { user, profile, profileLoading } = useAuth()
   const { count: cartCount } = useCart()
   const { count: favoritesCount } = useFavorites()
   const [pendingOffers, setPendingOffers] = useState(0)
   const isAdmin = Boolean(profile?.is_admin)
-  const mobileNavItems = isAdmin
-    ? baseMobileNavItems.filter((item) => item.label === 'Início' || item.label === 'Perfil')
-    : baseMobileNavItems
+  const mobileNavItems = isAdmin ? adminMobileNavItems : baseMobileNavItems
 
   useEffect(() => {
     if (!profile?.is_admin) return
@@ -167,6 +174,7 @@ export default function Layout() {
               key={label}
               to={to}
               end={end}
+              title={isAdmin ? label : undefined}
               className={({ isActive }) =>
                 `relative flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium ${
                   isActive ? 'text-forest-700' : 'text-forest-400'
@@ -180,8 +188,13 @@ export default function Layout() {
                     {favoritesCount}
                   </span>
                 )}
+                {isAdmin && label === 'Ofertas' && pendingOffers > 0 && (
+                  <span className="absolute -right-2 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] text-white">
+                    {pendingOffers}
+                  </span>
+                )}
               </span>
-              {label}
+              {!isAdmin && label}
             </NavLink>
           ))}
         </nav>
