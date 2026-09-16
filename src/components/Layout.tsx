@@ -10,7 +10,7 @@ import Logo from './Logo'
 
 const baseMobileNavItems = [
   { to: '/', label: 'Início', icon: Home, end: true },
-  { to: '/negociacoes', label: 'Negociações', icon: Tag },
+  { to: '/negociacoes', label: 'Minhas negociações', icon: Tag },
   { to: '/favoritos', label: 'Favoritas', icon: Heart },
   { to: '/perfil', label: 'Perfil', icon: User },
 ]
@@ -83,10 +83,10 @@ export default function Layout() {
                   <>
                     <Link
                       to="/negociacoes"
-                      className="hidden p-2 text-forest-500 hover:text-forest-700 sm:block"
-                      title="Minhas negociações"
+                      className="hidden items-center gap-1.5 p-2 text-sm font-medium text-forest-500 hover:text-forest-700 sm:flex"
                     >
-                      <Tag size={22} />
+                      <Tag size={20} />
+                      Minhas negociações
                     </Link>
                     <Link
                       to="/favoritos"
