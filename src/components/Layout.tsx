@@ -48,7 +48,7 @@ export default function Layout() {
                       className="flex items-center gap-1 rounded-full bg-forest-600 px-4 py-2 text-sm font-medium text-cream-50 hover:bg-forest-700"
                     >
                       <LayoutDashboard size={18} />
-                      Admin
+                      Minhas peças
                     </Link>
                     <Link
                       to="/admin/pedidos"

@@ -115,7 +115,7 @@ export default function Home() {
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-4">
-        <h2 className="font-serif text-2xl font-medium uppercase text-forest-900">
+        <h2 className="font-serif text-[20px] font-medium uppercase text-oliva sm:text-2xl">
           Encontre sua próxima história
         </h2>
         <div className="h-px min-w-8 flex-1 bg-cream-300" aria-hidden />
