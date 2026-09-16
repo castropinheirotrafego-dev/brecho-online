@@ -8,6 +8,8 @@ import AdminRoute from './components/AdminRoute'
 import Home from './routes/Home'
 import Login from './routes/Login'
 import SignUp from './routes/SignUp'
+import ForgotPassword from './routes/ForgotPassword'
+import ResetPassword from './routes/ResetPassword'
 import ItemDetail from './routes/ItemDetail'
 import Cart from './routes/Cart'
 import Profile from './routes/Profile'
@@ -29,6 +31,8 @@ export default function App() {
             <Route index element={<Home />} />
             <Route path="entrar" element={<Login />} />
             <Route path="cadastro" element={<SignUp />} />
+            <Route path="esqueci-senha" element={<ForgotPassword />} />
+            <Route path="redefinir-senha" element={<ResetPassword />} />
             <Route path="pecas/:id" element={<ItemDetail />} />
             <Route
               path="carrinho"

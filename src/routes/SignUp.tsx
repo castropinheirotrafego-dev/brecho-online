@@ -3,9 +3,10 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import Breadcrumbs from '../components/Breadcrumbs'
+import GoogleIcon from '../components/GoogleIcon'
 
 export default function SignUp() {
-  const { signUp } = useAuth()
+  const { signUp, signInWithGoogle } = useAuth()
   const navigate = useNavigate()
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
@@ -14,6 +15,7 @@ export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [googleLoading, setGoogleLoading] = useState(false)
   const [done, setDone] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
@@ -27,6 +29,17 @@ export default function SignUp() {
       setError(err instanceof Error ? err.message : 'Erro ao criar conta')
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleGoogleSignIn() {
+    setError(null)
+    setGoogleLoading(true)
+    try {
+      await signInWithGoogle()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao entrar com Google')
+      setGoogleLoading(false)
     }
   }
 
@@ -103,6 +116,23 @@ export default function SignUp() {
           {loading ? 'Criando...' : 'Criar conta'}
         </button>
       </form>
+
+      <div className="my-5 flex items-center gap-3">
+        <div className="h-px flex-1 bg-cream-300" />
+        <span className="text-xs font-medium text-forest-400">ou</span>
+        <div className="h-px flex-1 bg-cream-300" />
+      </div>
+
+      <button
+        type="button"
+        onClick={handleGoogleSignIn}
+        disabled={googleLoading}
+        className="flex w-full items-center justify-center gap-2 rounded-full border border-cream-300 bg-white px-4 py-2 font-medium text-forest-700 hover:bg-cream-100 disabled:opacity-50"
+      >
+        <GoogleIcon size={18} />
+        {googleLoading ? 'Conectando...' : 'Continuar com Google'}
+      </button>
+
       <p className="mt-4 text-sm text-forest-500">
         Já tem conta?{' '}
         <Link to="/entrar" className="font-medium text-forest-700">

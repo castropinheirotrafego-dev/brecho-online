@@ -3,9 +3,10 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import Breadcrumbs from '../components/Breadcrumbs'
+import GoogleIcon from '../components/GoogleIcon'
 
 export default function Login() {
-  const { signIn } = useAuth()
+  const { signIn, signInWithGoogle } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const prefillEmail = (location.state as { email?: string } | null)?.email ?? ''
@@ -14,6 +15,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [googleLoading, setGoogleLoading] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -26,6 +28,17 @@ export default function Login() {
       setError(err instanceof Error ? err.message : 'Erro ao entrar')
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleGoogleSignIn() {
+    setError(null)
+    setGoogleLoading(true)
+    try {
+      await signInWithGoogle()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao entrar com Google')
+      setGoogleLoading(false)
     }
   }
 
@@ -66,6 +79,11 @@ export default function Login() {
             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         </div>
+        <div className="-mt-2 text-right">
+          <Link to="/esqueci-senha" className="text-sm font-medium text-forest-600 hover:text-forest-800">
+            Esqueceu a senha?
+          </Link>
+        </div>
         {error && <p className="text-sm text-red-600">{error}</p>}
         <button
           type="submit"
@@ -75,6 +93,23 @@ export default function Login() {
           {loading ? 'Entrando...' : 'Entrar'}
         </button>
       </form>
+
+      <div className="my-5 flex items-center gap-3">
+        <div className="h-px flex-1 bg-cream-300" />
+        <span className="text-xs font-medium text-forest-400">ou</span>
+        <div className="h-px flex-1 bg-cream-300" />
+      </div>
+
+      <button
+        type="button"
+        onClick={handleGoogleSignIn}
+        disabled={googleLoading}
+        className="flex w-full items-center justify-center gap-2 rounded-full border border-cream-300 bg-white px-4 py-2 font-medium text-forest-700 hover:bg-cream-100 disabled:opacity-50"
+      >
+        <GoogleIcon size={18} />
+        {googleLoading ? 'Conectando...' : 'Continuar com Google'}
+      </button>
+
       <p className="mt-4 text-sm text-forest-500">
         Não tem conta?{' '}
         <Link to="/cadastro" className="font-medium text-forest-700">

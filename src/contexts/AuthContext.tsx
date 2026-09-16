@@ -19,8 +19,11 @@ interface AuthContextValue {
   profileLoading: boolean
   signUp: (fullName: string, email: string, phone: string, password: string) => Promise<void>
   signIn: (email: string, password: string) => Promise<void>
+  signInWithGoogle: () => Promise<void>
   signOut: () => Promise<void>
   refreshProfile: () => Promise<void>
+  resetPassword: (email: string) => Promise<void>
+  updatePassword: (password: string) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
@@ -86,8 +89,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error
   }
 
+  async function signInWithGoogle() {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin },
+    })
+    if (error) throw error
+  }
+
   async function signOut() {
     const { error } = await supabase.auth.signOut()
+    if (error) throw error
+  }
+
+  async function resetPassword(email: string) {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/redefinir-senha`,
+    })
+    if (error) throw error
+  }
+
+  async function updatePassword(password: string) {
+    const { error } = await supabase.auth.updateUser({ password })
     if (error) throw error
   }
 
@@ -101,8 +124,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         profileLoading,
         signUp,
         signIn,
+        signInWithGoogle,
         signOut,
         refreshProfile,
+        resetPassword,
+        updatePassword,
       }}
     >
       {children}
